@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="4dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/border"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:baselineAligned="false"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="left"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <ImageView
+                        android:id="@+id/imgHighlight"
+                        android:layout_width="35dp"
+                        android:layout_height="35dp"
+                        android:contentDescription="@string/highlight"
+                        android:scaleType="fitXY"
+                        android:src="@drawable/ic_highlight" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/actions_layout"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:visibility="visible">
+
+                    <LinearLayout
+                        android:id="@+id/trash_actions_layout"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:visibility="visible">
+
+                        <ImageView
+                            android:id="@+id/imgRestore"
+                            android:layout_width="35dp"
+                            android:layout_height="35dp"
+                            android:contentDescription="Restore"
+                            android:scaleType="fitXY"
+                            android:src="@drawable/ic_restore" />
+
+                        <ImageView
+                            android:id="@+id/imgDeleteForever"
+                            android:layout_width="35dp"
+                            android:layout_height="35dp"
+                            android:contentDescription="Delete forever"
+                            android:scaleType="fitXY"
+                            android:src="@drawable/ic_delete_forever" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/active_actions_layout"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginRight="4dp"
+                        android:orientation="horizontal">
+
+                        <ImageView
+                            android:id="@+id/imgTrash"
+                            android:layout_width="35dp"
+                            android:layout_height="35dp"
+                            android:contentDescription="Trash"
+                            android:scaleType="fitXY"
+                            android:src="@drawable/ic_delete" />
+
+                        <ImageView
+                            android:id="@+id/imgPublish"
+                            android:layout_width="35dp"
+                            android:layout_height="35dp"
+                            android:layout_marginRight="2dp"
+                            android:contentDescription="Share"
+                            android:scaleType="fitXY"
+                            android:src="@drawable/ic_share" />
+                    </LinearLayout>
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:baselineAligned="false"
+                android:orientation="horizontal">
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginLeft="4dp"
+                    android:layout_weight="1">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+                        <ImageView
+                            android:id="@+id/imgItem"
+                            android:layout_width="match_parent"
+                            android:layout_height="120dp"
+                            android:layout_gravity="center"
+                            android:contentDescription="@string/Item_image"
+                            android:src="@drawable/ic_manech_logo"
+                            android:scaleType="fitXY" />
+
+                        <TextView
+                            android:id="@+id/tvTitle"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:ellipsize="end"
+                            android:gravity="center"
+                            android:maxLines="2"
+                            android:text="No Title"
+                            android:textColor="@color/colorAccent"
+                            android:textSize="18sp" />
+
+                        <TextView
+                            android:id="@+id/tvDescription"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:ellipsize="end"
+                            android:maxLines="2"
+                            android:text="No Description"
+                            android:textColor="@color/colorPrimaryDark"
+                            android:textSize="14sp" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/tvPrice"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:text="0.0 DH"
+                            android:textColor="@color/colorAccent"
+                            android:textSize="18sp" />
+
+                        <TextView
+                            android:id="@+id/tvItemCode"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:text="No Code"
+                            android:textColor="@color/colorPrimaryDark"
+                            android:textSize="14sp" />
+
+                        <TextView
+                            android:id="@+id/tvState"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:textColor="@color/colorPrimaryDark"
+                            android:textSize="14sp" />
+
+                    </LinearLayout>
+
+                </RelativeLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginRight="4dp"
+                    android:layout_weight="4"
+                    android:gravity="bottom|right"
+                    android:orientation="vertical">
+
+                    <LinearLayout
+                        android:id="@+id/buyer_actions_layout"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginRight="2dp"
+                        android:orientation="vertical"
+                        tools:visibility="visible">
+
+                        <ImageView
+                            android:id="@+id/imgFavorite"
+                            android:layout_width="35dp"
+                            android:layout_height="35dp"
+                            android:contentDescription="Add to my Favorite"
+                            android:scaleType="fitXY"
+                            android:src="@drawable/ic_favorite_border" />
+
+                        <ImageView
+                            android:id="@+id/imgAdd2Cart"
+                            android:layout_width="35dp"
+                            android:layout_height="35dp"
+                            android:contentDescription="Add to cartItem"
+                            android:scaleType="fitXY"
+                            android:src="@drawable/ic_add_shopping_cart" />
+                    </LinearLayout>
+
+                    <ImageView
+                        android:id="@+id/imgDuplicate"
+                        android:layout_width="35dp"
+                        android:layout_height="35dp"
+                        android:contentDescription="Duplicate"
+                        android:scaleType="fitXY"
+                        android:src="@drawable/ic_copy" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"></LinearLayout>
+    </LinearLayout>
+
+
+</FrameLayout>

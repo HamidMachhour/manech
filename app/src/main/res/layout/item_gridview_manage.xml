@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="utf-8"?>
+    <RelativeLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="4dp"
+        android:background="@drawable/border"
+        android:orientation="horizontal">
+
+    <ImageView
+        android:id="@+id/imgItem"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="2dp"
+        android:layout_marginTop="2dp"
+        android:layout_marginEnd="2dp"
+        android:layout_marginBottom="2dp"
+        android:contentDescription="@string/Item_image"
+        android:scaleType="fitXY"
+        android:src="@drawable/ic_manech_logo" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignBottom="@id/imgItem"
+            android:orientation="vertical"
+            android:padding="2dp">
+
+            <TextView
+                android:id="@+id/tvTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@color/colorPrimary"
+                android:ellipsize="end"
+                android:gravity="center"
+                android:maxLines="2"
+                android:textColor="@color/colorAccent"
+                android:textSize="12sp" />
+
+            <TextView
+                android:id="@+id/tvItemCode"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:background="@color/colorPrimary"
+                android:textColor="@color/colorPrimaryDark"
+                android:textSize="12sp" />
+
+            <TextView
+                android:id="@+id/tvState"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:background="@color/colorPrimary"
+                android:textColor="@color/colorPrimaryDark"
+                android:textSize="12sp" />
+
+            <TextView
+                android:id="@+id/tvPrice"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:background="@color/colorPrimary"
+                android:textColor="@color/colorAccent"
+                android:textSize="12sp" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/actions_layout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="visible"
+            android:layout_alignEnd="@id/imgItem">
+
+            <LinearLayout
+                android:id="@+id/trash_actions_layout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="4dp"
+                android:background="@drawable/border3"
+                android:gravity="center_vertical"
+                android:orientation="vertical"
+                android:visibility="visible">
+
+                <ImageView
+                    android:id="@+id/imgRestore"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:layout_marginBottom="4dp"
+                    android:contentDescription="Restore"
+                    android:padding="6dp"
+                    android:scaleType="fitXY"
+                    android:src="@drawable/ic_restore" />
+
+                <ImageView
+                    android:id="@+id/imgDeleteForever"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:contentDescription="Delete forever"
+                    android:padding="6dp"
+                    android:scaleType="fitXY"
+                    android:src="@drawable/ic_delete_forever" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/active_actions_layout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="4dp"
+                android:background="@drawable/border3"
+                android:gravity="center_vertical"
+                android:orientation="vertical">
+
+                <ImageView
+                    android:id="@+id/imgDuplicate"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:layout_marginBottom="4dp"
+                    android:contentDescription="Duplicate"
+                    android:padding="6dp"
+                    android:scaleType="fitXY"
+                    android:src="@drawable/ic_copy" />
+
+                <ImageView
+                    android:id="@+id/imgTrash"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:layout_marginBottom="4dp"
+                    android:contentDescription="Trash"
+                    android:padding="6dp"
+                    android:scaleType="fitXY"
+                    android:src="@drawable/ic_delete" />
+
+                <ImageView
+                    android:id="@+id/imgPublish"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:contentDescription="Share"
+                    android:padding="6dp"
+                    android:scaleType="fitXY"
+                    android:src="@drawable/ic_share" />
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <ImageView
+            android:id="@+id/imgHighlight"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_marginStart="2dp"
+            android:layout_marginTop="2dp"
+            android:layout_marginEnd="2dp"
+            android:layout_marginBottom="2dp"
+            android:background="@drawable/border3"
+            android:contentDescription="@string/highlight"
+            android:padding="6dp"
+            android:scaleType="fitXY"
+            android:src="@drawable/ic_highlight" />
+
+    </RelativeLayout>
