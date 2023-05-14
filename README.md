@@ -1,1 +1,1 @@
-# manechmanager
+# manechApp
