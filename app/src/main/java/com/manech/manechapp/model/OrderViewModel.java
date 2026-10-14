@@ -23,6 +23,8 @@ public class OrderViewModel extends ViewModel {
     private MutableLiveData<Order> currentOrder = new MutableLiveData<Order>();
     private MutableLiveData<List<DeliveryMethod>> deliveryMethods = new MutableLiveData<List<DeliveryMethod>>();
     private MutableLiveData<List<Order>> orders = new MutableLiveData<List<Order>>();
+    private MutableLiveData<List<Order>> dashboardOrders = new MutableLiveData<>();
+    private MutableLiveData<List<Order>> dashboardSells = new MutableLiveData<>();
     private MutableLiveData<Boolean> booleanMutableLiveData = new MutableLiveData<Boolean>();
 
     public void setOrderRepository(OrderRepository orderRepository) {
@@ -63,6 +65,14 @@ public class OrderViewModel extends ViewModel {
         return orders;
     }
 
+    public MutableLiveData<List<Order>> getDashboardSells() {
+        return dashboardSells;
+    }
+
+    public MutableLiveData<List<Order>> getDashboardOrders() {
+        return dashboardOrders;
+    }
+
     public void fetchOrders(UUID owner) {
         executor.execute(() -> {
             orders.postValue(orderRepository.orderByOwner(owner));
@@ -76,9 +86,29 @@ public class OrderViewModel extends ViewModel {
 
     }
 
+    // orders received by the current default store of this user
+    public void fetchSells(UUID userId) {
+        executor.execute(() -> orders.postValue(orderRepository.ordersByUserStore(userId)));
+    }
+
+    public void fetchDashboardSells(UUID userId) {
+        executor.execute(() -> dashboardSells.postValue(orderRepository.ordersByUserStore(userId)));
+    }
+
+    public void fetchDashboardOrders(UUID userId) {
+        executor.execute(() -> dashboardOrders.postValue(orderRepository.orderByOwner(userId)));
+    }
+
     public void fetchOrdersByStore(UUID storeId) {
         executor.execute(() -> {
             orders.postValue(orderRepository.ordersByStore(storeId));
+        });
+    }
+
+    public void changeOrderStatus(UUID orderId, com.manech.manechapp.data.Status status) {
+        executor.execute(() -> {
+            orderRepository.changeStatus(orderId, status);
+            currentOrder.postValue(orderRepository.orderById(orderId));
         });
     }
 

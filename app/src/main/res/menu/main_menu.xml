@@ -15,6 +15,38 @@
         android:title="@string/manage_stores"
         app:showAsAction="ifRoom"></item>
     <item
+        android:id="@+id/action_browse_stores"
+        android:icon="@drawable/ic_store"
+        android:orderInCategory="4"
+        android:title="@string/public_stores"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_favorites"
+        android:orderInCategory="4"
+        android:title="@string/my_favorites">
+        <menu>
+            <item
+                android:id="@+id/action_favorite_items"
+                android:title="@string/favorite_items" />
+            <item
+                android:id="@+id/action_favorite_stores"
+                android:title="@string/favorite_stores" />
+        </menu>
+    </item>
+    <item
+        android:id="@+id/action_in_trash"
+        android:orderInCategory="4"
+        android:title="@string/in_trash_menu">
+        <menu>
+            <item
+                android:id="@+id/action_trash_items"
+                android:title="@string/in_trash_items" />
+            <item
+                android:id="@+id/action_trash_stores"
+                android:title="@string/in_trash_stores" />
+        </menu>
+    </item>
+    <item
         android:id="@+id/action_manage_items"
         android:icon="@drawable/ic_item"
         android:orderInCategory="4"
@@ -44,5 +76,10 @@
         android:orderInCategory="6"
         android:title="@string/logout"
         app:showAsAction="never"></item>
+    <item
+        android:id="@+id/action_language"
+        android:orderInCategory="7"
+        android:title="@string/change_language"
+        app:showAsAction="never" />
 
 </menu>

@@ -45,7 +45,7 @@
                         android:layout_height="wrap_content"
                         android:layout_gravity="center_vertical"
                         android:layout_weight="1"
-                        android:text="Title"
+                        android:text="@string/field_title"
                         android:textColor="@color/colorPrimary" />
 
                 </LinearLayout>
@@ -130,7 +130,7 @@
                         android:layout_height="wrap_content"
                         android:layout_gravity="center_vertical"
                         android:layout_weight="1"
-                        android:text="Details"
+                        android:text="@string/details"
                         android:textColor="@color/colorPrimary" />
 
                 </LinearLayout>
@@ -150,7 +150,7 @@
                         android:orientation="horizontal">
 
                         <LinearLayout
-                            android:layout_width="match_parent"
+                            android:layout_width="0dp"
                             android:layout_height="match_parent"
                             android:layout_weight="1"
                             android:orientation="vertical">
@@ -160,24 +160,45 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:labelFor="@id/txtItemCode"
-                                android:text="Code"
+                                android:text="@string/field_code"
                                 android:textColor="@color/colorAccent" />
 
-                            <EditText
-                                android:id="@+id/txtItemCode"
+                            <LinearLayout
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:enabled="true"
-                                android:inputType="text"
-                                android:textColor="@color/colorPrimaryDark"
-                                android:textSize="16sp" />
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal">
+
+                                <EditText
+                                    android:id="@+id/txtItemCode"
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:enabled="true"
+                                    android:inputType="text"
+                                    android:textColor="@color/colorPrimaryDark"
+                                    android:textSize="16sp" />
+
+                                <ImageView
+                                    android:id="@+id/button_scan_item_code"
+                                    android:layout_width="30dp"
+                                    android:layout_height="30dp"
+                                    android:layout_margin="4dp"
+                                    android:background="@drawable/border3"
+                                    android:clickable="true"
+                                    android:contentDescription="@string/scan_barcode"
+                                    android:focusable="true"
+                                    android:padding="6dp"
+                                    android:scaleType="fitXY"
+                                    android:src="@drawable/ic_scan_barcode" />
+                            </LinearLayout>
 
                             <TextView
                                 android:id="@+id/tv5"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:labelFor="@id/txtQuantity"
-                                android:text="Quantity"
+                                android:text="@string/column_quantity"
                                 android:textColor="@color/colorAccent" />
 
                             <EditText
@@ -192,7 +213,7 @@
                         </LinearLayout>
 
                         <LinearLayout
-                            android:layout_width="match_parent"
+                            android:layout_width="0dp"
                             android:layout_height="match_parent"
                             android:layout_weight="1"
                             android:orientation="vertical">
@@ -202,7 +223,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:labelFor="@id/txtPrice"
-                                android:text="Price"
+                                android:text="@string/column_price"
                                 android:textColor="@color/colorAccent" />
 
                             <EditText
@@ -252,7 +273,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:labelFor="@id/txtMinQty"
-                                android:text="Min Qty"
+                                android:text="@string/min_qty"
                                 android:textColor="@color/colorAccent"
                                 android:visibility="visible" />
 
@@ -272,7 +293,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:labelFor="@id/txtMaxQty"
-                                android:text="Max Qty"
+                                android:text="@string/max_qty"
                                 android:textColor="@color/colorAccent"
                                 android:visibility="visible" />
 
@@ -300,7 +321,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:labelFor="@id/txtBasePrice"
-                                android:text="Base Price"
+                                android:text="@string/base_price"
                                 android:textColor="@color/colorAccent"
                                 android:visibility="visible" />
 
@@ -319,7 +340,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:labelFor="@id/txtLocation"
-                                android:text="Location number"
+                                android:text="@string/location_number"
                                 android:textColor="@color/colorAccent"
                                 android:visibility="visible" />
 

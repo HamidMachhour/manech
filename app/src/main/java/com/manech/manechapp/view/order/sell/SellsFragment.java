@@ -26,6 +26,12 @@ import com.manech.manechapp.view.order.LineClicked;
 import com.manech.manechapp.view.order.OrderFragment;
 import com.manech.manechapp.view.order.OrderListAdapter;
 
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.Spinner;
+import android.widget.TextView;
+import com.manech.manechapp.view.order.OrderFilterCard;
+
 import java.util.List;
 
 public class SellsFragment extends Fragment implements LineClicked {
@@ -40,6 +46,9 @@ public class SellsFragment extends Fragment implements LineClicked {
     private OrderListAdapter sellListAdapter;
 
     private ProgressDialog mDialog;
+    private OrderFilterCard filterCard;
+    private TextView tvNoSells;
+    private List<Order> allOrders = new java.util.ArrayList<>();
 
     private SecureSharedPref sharedPref;
 
@@ -60,8 +69,8 @@ public class SellsFragment extends Fragment implements LineClicked {
                     }*/
                     getActivity().setTitle(getString(R.string.my_sells));
 
-                    sellListAdapter =new OrderListAdapter(orders, SellsFragment.this);
-                    sellListRecyclerView.setAdapter(sellListAdapter);
+                    allOrders = orders;
+                    applyStatusFilter();
                 }
                 hideProgressDialog();
             }
@@ -83,17 +92,27 @@ public class SellsFragment extends Fragment implements LineClicked {
         sellListRecyclerView.setHasFixedSize(true);
         sellListRecyclerView.setLayoutManager(new LinearLayoutManager(view.getContext()));
 
+        tvNoSells = view.findViewById(R.id.tv_no_sells);
+        filterCard = OrderFilterCard.bind(view, this::applyStatusFilter);
+
         showProgressDialog();
-        orderViewModel.fetchOrdersByStore(sharedPref.getUUID(getString(R.string.defaultStore), null));
         return view;
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        hideProgressDialog();
+        // reload so status changes made in the details screen show up
+        orderViewModel.fetchSells(sharedPref.getUUID(getString(R.string.current_user_id), null));
     }
 
+    private void applyStatusFilter() {
+        if (filterCard == null || sellListRecyclerView == null) return;
+        final List<Order> shown = filterCard.apply(allOrders);
+        sellListAdapter = new OrderListAdapter(shown, SellsFragment.this);
+        sellListRecyclerView.setAdapter(sellListAdapter);
+        tvNoSells.setVisibility(shown.isEmpty() ? View.VISIBLE : View.GONE);
+    }
 
     private void showProgressDialog() {
         mDialog = new ProgressDialog(getContext());
@@ -117,7 +136,7 @@ public class SellsFragment extends Fragment implements LineClicked {
                 return true;
             case R.id.action_refresh:
                 showProgressDialog();
-                orderViewModel.fetchOrdersByStore(sharedPref.getUUID(getString(R.string.defaultStore), null));
+                orderViewModel.fetchSells(sharedPref.getUUID(getString(R.string.current_user_id), null));
                 return true;
             default:
                 return super.onOptionsItemSelected(item);

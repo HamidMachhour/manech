@@ -3,10 +3,18 @@ package com.manech.manechapp;
 import android.app.Application;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.content.Context;
 import android.os.Build;
+
+import com.manech.manechapp.helper.LocaleHelper;
 
 public class App extends Application {
     public static final String CHANNEL_ID = "ManechAppChannel";
+
+    @Override
+    protected void attachBaseContext(Context base) {
+        super.attachBaseContext(LocaleHelper.wrap(base));
+    }
 
     @Override
     public void onCreate() {

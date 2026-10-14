@@ -8,6 +8,7 @@ import com.manech.manechapp.data.CartItem;
 import com.manech.manechapp.data.Order;
 import com.manech.manechapp.data.OrderLine;
 import com.manech.manechapp.data.OrderStatus;
+import com.manech.manechapp.data.Status;
 import com.manech.manechapp.data.DeliveryMethod;
 
 import java.util.List;
@@ -109,6 +110,18 @@ public class OrderRepository {
         return true;
     }
 
+    public List<Order> ordersByUserStore(UUID userId) {
+        return withDetails(orderDAO.ordersByUserStore(userId));
+    }
+
+    private List<Order> withDetails(List<Order> orders) {
+        for (Order order : orders) {
+            order.setOrderLineList(orderDAO.orderLines(order.getId()));
+            order.setOrderStatusList(orderDAO.orderStatus(order.getId()));
+        }
+        return orders;
+    }
+
     public List<Order> ordersByStore(UUID storeId) {
         final List<Order> orders = orderDAO.ordersByStore(storeId);
         for (Order order : orders) {
@@ -118,6 +131,16 @@ public class OrderRepository {
         return orders;
     }
 
+
+    public void changeStatus(UUID orderId, Status status) {
+        orderDAO.upsertOrderStatus(new OrderStatus(orderId, status, new java.util.Date()));
+        // the goods go back on the shelf when the order is cancelled or returned
+        if (status == Status.CANCELLED || status == Status.RETURNED) {
+            for (OrderLine line : orderDAO.orderLines(orderId)) {
+                orderDAO.adjustItemStock(line.getItemId(), line.getQuantity());
+            }
+        }
+    }
 
     public void upsertOrder(Order order) {
         orderDAO.upsertOrder(order);

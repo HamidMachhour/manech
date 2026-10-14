@@ -8,26 +8,24 @@
         android:title="@string/back"
         app:showAsAction="always"></item>
     <item
-        android:id="@+id/action_search"
-        android:icon="@drawable/ic_search"
-        android:orderInCategory="1"
-        android:title="@string/search"
-        app:actionViewClass="androidx.appcompat.widget.SearchView"
-        app:showAsAction="always" />
-
-    <item
         android:id="@+id/action_save"
         android:icon="@drawable/ic_save_changes"
-        android:orderInCategory="2"
+        android:orderInCategory="1"
         android:title="@string/refresh"
         app:showAsAction="always"></item>
 
     <item
         android:id="@+id/action_add"
         android:icon="@drawable/ic_add"
-        android:orderInCategory="3"
+        android:orderInCategory="2"
         android:title="@string/add_item"
         app:showAsAction="always"></item>
+    <item
+        android:id="@+id/action_import_item_qr"
+        android:icon="@drawable/ic_scan_barcode"
+        android:orderInCategory="3"
+        android:title="@string/import_item_from_qr"
+        app:showAsAction="always" />
     <item
         android:id="@+id/action_viewFormat"
         android:icon="@drawable/ic_grid"
@@ -40,5 +38,11 @@
         android:orderInCategory="5"
         android:title="@string/trash"
         app:showAsAction="ifRoom"></item>
+    <item
+        android:id="@+id/action_print_item_qr_codes"
+        android:icon="@drawable/ic_qr_code"
+        android:orderInCategory="6"
+        android:title="@string/print_item_qr_codes"
+        app:showAsAction="ifRoom" />
 
 </menu>

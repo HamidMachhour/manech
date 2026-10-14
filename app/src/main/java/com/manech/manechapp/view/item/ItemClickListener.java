@@ -18,4 +18,7 @@ public interface ItemClickListener {
 
     void highlight(int layoutPosition);
     void clicked(int position);
+
+    default void joinClicked(int layoutPosition) {
+    }
 }

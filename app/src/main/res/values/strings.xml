@@ -38,6 +38,102 @@
     <string name="delete_store_confirm">Do you really want to delete this Store?</string>
 
     <string name="home">HOME</string>
+    <string name="delivery_method_label">Delivery Method</string>
+    <string name="delivery_address_label">Delivery Address</string>
+    <string name="billing_address_label">Billing Address</string>
+    <string name="details">Details</string>
+    <string name="current_status">Current status:</string>
+    <string name="status_pending">PENDING</string>
+    <string name="status_processing">PROCESSING</string>
+    <string name="status_shipped">SHIPPED</string>
+    <string name="status_delivered">DELIVERED</string>
+    <string name="status_returned">RETURNED</string>
+    <string name="status_cancelled">CANCELLED</string>
+    <string name="field_title">Title</string>
+    <string name="field_code">Code</string>
+    <string name="shipping_fee">Shipping Fee</string>
+    <string name="min_qty">Min Qty</string>
+    <string name="max_qty">Max Qty</string>
+    <string name="base_price">Base Price</string>
+    <string name="location_number">Location number</string>
+    <string name="store_name">Store name</string>
+    <string name="store_status">Store status</string>
+    <string name="street_address">Street address</string>
+    <string name="zip_code">Zip code</string>
+    <string name="city">City</string>
+    <string name="phone_numbers">Phone Numbers</string>
+    <string name="country">Country</string>
+    <string name="latitude_longitude">Latitude, Longitude</string>
+    <string name="select_placeholder">Select ...</string>
+    <string name="latitude">Latitude</string>
+    <string name="longitude">Longitude</string>
+    <string name="default_address_label">Default Address:</string>
+    <string name="local">Local</string>
+    <string name="online">Online</string>
+    <string name="stores_label">Stores:</string>
+    <string name="selected_store_names">Selected store names</string>
+    <string name="categories_label">Categories:</string>
+    <string name="selected_category_names">Selected category names</string>
+    <string name="exit_title">Exit</string>
+    <string name="exit_confirm">Exit Manech?</string>
+    <string name="published_state">Published</string>
+    <string name="in_trash_state">In Trash</string>
+    <string name="default_store_label">Default store</string>
+    <string name="move_to_trash_title">Move to Trash</string>
+    <string name="move_item_to_trash_confirm">Move this item to the Trash?</string>
+    <string name="move_store_to_trash_confirm">Move this store to the Trash?</string>
+    <string name="publish_store_title">Publishing</string>
+    <string name="unpublish_store_title">Unpublishing</string>
+    <string name="publish_store_confirm">Publish this Store?</string>
+    <string name="unpublish_store_confirm">Unpublish this Store?</string>
+    <string name="add_images">Add Images</string>
+    <string name="from_gallery">From Gallery</string>
+    <string name="from_url">From URL</string>
+    <string name="select_images">Select Images</string>
+    <string name="add_image_from_url">Add image from URL</string>
+    <string name="enter_url">Enter URL</string>
+    <string name="image_size_limit">Image size must be under 150 KB!</string>
+    <string name="add">Add</string>
+    <string name="print">Print</string>
+    <string name="no_thanks">No thanks</string>
+    <string name="edit_description">Edit description</string>
+    <string name="html_preview">Preview HTML</string>
+    <string name="html_edit_source">Edit HTML source</string>
+    <string name="change_language">Language / اللغة</string>
+    <string name="language_dialog_title">Choose language</string>
+    <string name="language_english">English</string>
+    <string name="language_arabic">العربية</string>
+    <string name="dashboard_current_store">Current store</string>
+    <string name="dashboard_no_store">Set a current store to view its dashboard statistics.</string>
+    <string name="dashboard_date_filter">Filter orders and sales by date</string>
+    <string name="dashboard_from_date">From date</string>
+    <string name="dashboard_to_date">To date</string>
+    <string name="dashboard_inventory">Inventory</string>
+    <string name="dashboard_items_value">Active items: %1$d</string>
+    <string name="dashboard_stock_value">Units in stock: %1$.2f</string>
+    <string name="dashboard_low_stock_value">At or below minimum stock: %1$d</string>
+    <string name="dashboard_orders">My orders</string>
+    <string name="dashboard_orders_value">Orders in range: %1$d</string>
+    <string name="dashboard_pending_value">Pending: %1$d</string>
+    <string name="dashboard_sells">My store sells</string>
+    <string name="dashboard_sales_chart_description">Sales value aggregated by selected time period</string>
+    <string name="dashboard_sales_period_day">By day</string>
+    <string name="dashboard_sales_period_month">By month</string>
+    <string name="dashboard_sales_period_year">By year</string>
+    <string name="dashboard_no_sales_chart_data">No sales in this date range</string>
+    <string name="dashboard_trending_title">Trending best-selling items</string>
+    <string name="dashboard_trending_range">Based on orders from %1$s to %2$s</string>
+    <string name="dashboard_trending_empty">No sold items in this date range.</string>
+    <string name="dashboard_trending_item">%1$d. %2$s — %3$.2f units sold · %4$.2f DH</string>
+    <string name="dashboard_trending_all_dates">all dates</string>
+    <string name="dashboard_unknown_item">Unnamed item</string>
+    <string-array name="dashboard_sales_periods">
+        <item>@string/dashboard_sales_period_day</item>
+        <item>@string/dashboard_sales_period_month</item>
+        <item>@string/dashboard_sales_period_year</item>
+    </string-array>
+    <string name="dashboard_sells_value">Sales in range: %1$d</string>
+    <string name="dashboard_sales_value">Sales value: %1$.2f DH</string>
     <string name="delete_all">DELETE ALL</string>
     <string name="highlight">HIGHLIGHT</string>
     <string name="duplicate">DUPLICATE</string>
@@ -166,8 +262,89 @@
     <string name="active_item">Active</string>
     <string name="in_trash">In Trash</string>
     <string name="all_item">All</string>
+    <string name="orphan_item">Orphan</string>
+    <string name="join_item_title">Join store</string>
+    <string name="join_item_msg">Join this item to the current store?</string>
     <string name="filter_title">Filter</string>
     <string name="published">Published</string>
     <string name="description">Description</string>
     <string name="item_images">ITEM IMAGES</string>
+    <string name="my_favorites">MY FAVORITES</string>
+    <string name="in_trash_menu">IN TRASH</string>
+    <string name="in_trash_items">In trash items</string>
+    <string name="in_trash_stores">In trash stores</string>
+    <string name="items_trash_view">items_trash_view</string>
+    <string name="stores_trash_view">stores_trash_view</string>
+    <string name="favorite_items">Favorite items</string>
+    <string name="favorite_stores">Favorite stores</string>
+    <string name="public_stores">PUBLIC STORES</string>
+    <string name="favorite_items_view">favorite_items_view</string>
+    <string name="favorite_stores_view">favorite_stores_view</string>
+    <string name="public_stores_view">public_stores_view</string>
+    <string name="add_favorite">Add favorite</string>
+    <string name="remove_favorite">Remove favorite</string>
+    <string name="copy_store">Copy store</string>
+    <string name="store_copy_success">Store and its active items copied to My Stores.</string>
+    <string name="store_copy_failed">Unable to copy this store.</string>
+    <string name="login_required">Please sign in to use this feature.</string>
+    <string name="search_items">Search items</string>
+    <string name="scan_barcode">Scan barcode</string>
+    <string name="filter_items">Filter items</string>
+    <string name="maximum_price">Maximum price (DH)</string>
+    <string name="in_stock_only">In stock only</string>
+    <string name="min_price">Min price</string>
+    <string name="max_price">Max price</string>
+    <string name="favorites_first">Favorites first</string>
+    <string name="reset_filters">Reset</string>
+    <string name="search_stores">Search stores</string>
+    <string name="published_only">Published only</string>
+    <string name="favorites_only">Favorites only</string>
+    <string-array name="store_sort_options">
+        <item>Default order</item>
+        <item>Name: A to Z</item>
+        <item>Name: Z to A</item>
+    </string-array>
+    <string-array name="item_sort_options">
+        <item>Default order</item>
+        <item>Price: low to high</item>
+        <item>Price: high to low</item>
+        <item>Name: A to Z</item>
+        <item>Name: Z to A</item>
+        <item>Stock: most first</item>
+    </string-array>
+    <string name="item_filters">Item filters</string>
+    <string name="invalid_maximum_price">Enter a valid positive price.</string>
+    <string name="barcode_scan_failed">Could not start barcode scanning.</string>
+    <string name="barcode_value_not_found">The scanned code did not contain a readable value.</string>
+    <string name="print_item_qr_codes">Print item QR codes / Save PDF</string>
+    <string name="import_item_from_qr">Add item from QR code</string>
+    <string name="item_qr_print_job">Manech item QR codes</string>
+    <string name="item_qr_print_empty">There are no active items to include.</string>
+    <string name="item_qr_import_invalid">This QR code is not a valid Manech item.</string>
+    <string name="item_qr_import_added">Item added to the current store.</string>
+    <string name="favorite_added">Added to favorites.</string>
+    <string name="favorite_removed">Removed from favorites.</string>
+    <string name="place_order">Place order</string>
+    <string name="print_receipt">Print receipt</string>
+    <string name="order_receipt">Manech order receipt</string>
+    <string name="receipt_unavailable">Order receipt is not available yet.</string>
+    <string name="search_orders">Search by order ID or item</string>
+    <string-array name="order_sort_options">
+        <item>Newest first</item>
+        <item>Oldest first</item>
+        <item>Price: low to high</item>
+        <item>Price: high to low</item>
+    </string-array>
+    <string name="cancel_order">Cancel order</string>
+    <string name="confirm_cancel_order">Cancel this order? The items will go back in stock.</string>
+    <string name="status_unknown">Unknown</string>
+    <string name="all_statuses">All statuses</string>
+    <string name="mark_as">Mark as %1$s</string>
+    <string name="confirm_status_change">Change the status of this order to %1$s?</string>
+    <string name="status_updated">Order status updated</string>
+    <string name="no_sells">No orders for this store</string>
+    <string name="total">Total</string>
+    <string name="view_items">View items</string>
+    <string name="public_store_items_view">public_store_items_</string>
+    <string name="public_store_items_title">PUBLIC STORE ITEMS</string>
 </resources>

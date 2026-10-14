@@ -51,7 +51,7 @@ public class ItemsBuyFragment extends Fragment {
     private ItemFilter filter = ItemFilter.ALL;
 
     private UserViewModel userViewModel;
-   // ManechStore store;
+    ManechStore store;
     Cart currentCart;
     List<Item> buyItems;
 
@@ -325,8 +325,8 @@ public class ItemsBuyFragment extends Fragment {
 
     public void moveToTrashClicked(int p) {
         new AlertDialog.Builder(requireActivity())
-                .setTitle("Trash")
-                .setMessage("Move this item to the Trash?")
+                .setTitle(R.string.move_to_trash_title)
+                .setMessage(R.string.move_item_to_trash_confirm)
                 .setIcon(android.R.drawable.ic_dialog_alert)
                 .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int whichButton) {

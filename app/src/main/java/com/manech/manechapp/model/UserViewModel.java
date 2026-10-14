@@ -277,6 +277,13 @@ public class UserViewModel extends ViewModel {
     }
 
 
+    public void deleteStoreForever(UUID storeId) {
+        executor.execute(() -> {
+            storeRepository.delete(storeId);
+            userUpdateStatus.postValue(true);
+        });
+    }
+
     public void fetchCurrentUser(boolean reload, boolean reloadStores, boolean reloadAddresses, boolean reloadImages) {
         executor.execute(() -> {
             if (currentUser != null) {
@@ -394,6 +401,15 @@ public class UserViewModel extends ViewModel {
         });
     }
 
+    public void joinItemToCurrentStore(Item item) {
+        executor.execute(() -> {
+            if (currentStore != null && item != null) {
+                itemRepository.joinStore(item.getId(), currentStore.getId());
+            }
+            storeUpdateStatus.postValue(true);
+        });
+    }
+
     public void updateCurrentStoreItems(List<Item> itemsList) {
         executor.execute(() -> {
             if (currentStore != null) {
@@ -418,6 +434,22 @@ public class UserViewModel extends ViewModel {
                     }
                 }
             }
+            storeUpdateStatus.postValue(true);
+        });
+    }
+
+    public void addItemToCurrentStore(Item item) {
+        executor.execute(() -> {
+            if (currentStore == null || item == null
+                    || !currentStore.getId().equals(item.getStore())) {
+                storeUpdateStatus.postValue(false);
+                return;
+            }
+            itemRepository.insert(item);
+            if (currentStore.getItems() == null) {
+                currentStore.setItems(new ArrayList<>());
+            }
+            currentStore.getItems().add(item);
             storeUpdateStatus.postValue(true);
         });
     }

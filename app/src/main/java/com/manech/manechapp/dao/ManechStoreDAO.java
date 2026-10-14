@@ -42,6 +42,9 @@ public interface ManechStoreDAO {
     @Query("Select * from ManechStore where userId=:userId")
     List<ManechStore> fetchStores(UUID userId);
 
+    @Query("Select * from ManechStore where publishDate is not null and trashDate is null")
+    List<ManechStore> publicStores();
+
     @Query("update ManechStore set trashDate=CURRENT_TIMESTAMP where id=:storeId")
     void moveToTrash(UUID storeId);
 

@@ -149,7 +149,7 @@ public class ItemsBuyAdapter extends RecyclerView.Adapter<ItemBuyViewHolder> imp
 
         if (item.getPublishDate() != null) {
             holder.getImgPublish().setColorFilter(ContextCompat.getColor(holder.getImgPublish().getContext(), R.color.colorPrimaryDark));
-            holder.getTvState().setText("Published");
+            holder.getTvState().setText(R.string.published_state);
         }else{
             holder.getImgPublish().setColorFilter(ContextCompat.getColor(holder.getImgPublish().getContext(), R.color.colorAccent));
             holder.getTvState().setText("");
@@ -157,7 +157,7 @@ public class ItemsBuyAdapter extends RecyclerView.Adapter<ItemBuyViewHolder> imp
 
         if (item.getTrashDate() != null) {
             holder.getImgTrash().setColorFilter(ContextCompat.getColor(holder.getImgTrash().getContext(), R.color.colorPrimaryDark));
-            holder.getTvState().setText("In Trash");
+            holder.getTvState().setText(R.string.in_trash_state);
         }else {
             holder.getImgTrash().setColorFilter(ContextCompat.getColor(holder.getImgTrash().getContext(), R.color.colorAccent));
             holder.getTvState().setText("");
@@ -167,9 +167,7 @@ public class ItemsBuyAdapter extends RecyclerView.Adapter<ItemBuyViewHolder> imp
     private void loadDefaultImage(Item item,  ItemBuyViewHolder holder) {
         final ImageView imageView = holder.getImgItem();
         final ItemImage itemImage = item.getImage();
-        if(itemImage!=null){
-            MyUtils.loadResourceImage(itemImage,imageView);
-        }
+        MyUtils.loadResourceImage(itemImage, imageView);
     }
 
     @Override

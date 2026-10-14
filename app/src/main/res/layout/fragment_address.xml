@@ -50,7 +50,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:labelFor="@id/txtLatitude"
-                        android:text="Latitude"
+                        android:text="@string/latitude"
                         android:textColor="@color/colorAccent" />
 
                     <EditText
@@ -68,7 +68,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:labelFor="@id/txtLatitude"
-                        android:text="Longitude"
+                        android:text="@string/longitude"
                         android:textColor="@color/colorAccent" />
 
                     <EditText
@@ -94,7 +94,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:labelFor="@id/txtCity"
-                        android:text="City"
+                        android:text="@string/city"
                         android:textColor="@color/colorAccent" />
 
                     <EditText
@@ -109,7 +109,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:labelFor="@id/txtCountry"
-                        android:text="Country"
+                        android:text="@string/country"
                         android:textColor="@color/colorAccent" />
 
                     <EditText
@@ -132,7 +132,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:labelFor="@id/txtStreetAddress"
-                    android:text="Street address"
+                    android:text="@string/street_address"
                     android:textColor="@color/colorAccent" />
 
                 <EditText
@@ -150,7 +150,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:labelFor="@id/txtZipCode"
-                    android:text="Zip code"
+                    android:text="@string/zip_code"
                     android:textColor="@color/colorAccent" />
 
                 <EditText
@@ -173,7 +173,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:labelFor="@id/txtPhones"
-                    android:text="Phone Numbers"
+                    android:text="@string/phone_numbers"
                     android:textColor="@color/colorAccent" />
 
                 <EditText
@@ -193,7 +193,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:labelFor="@id/txtEmail"
-                    android:text="Email"
+                    android:text="@string/email"
                     android:textColor="@color/colorAccent" />
 
                 <EditText

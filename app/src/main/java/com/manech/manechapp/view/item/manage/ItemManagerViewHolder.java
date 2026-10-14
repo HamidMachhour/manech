@@ -21,6 +21,7 @@ public class ItemManagerViewHolder extends RecyclerView.ViewHolder implements Vi
     private final ImageView imgTrash;
     private final ImageView imgDuplicate;
     private final ImageView imgPublish;
+    private final ImageView imgJoin;
 
     private final ImageView imgRestore;
     private final ImageView imgDelete;
@@ -48,6 +49,8 @@ public class ItemManagerViewHolder extends RecyclerView.ViewHolder implements Vi
         imgDuplicate.setOnClickListener(this);
         imgPublish = itemView.findViewById(R.id.imgPublish);
         imgPublish.setOnClickListener(this);
+        imgJoin = itemView.findViewById(R.id.imgJoin);
+        imgJoin.setOnClickListener(this);
         imgHighlight = itemView.findViewById(R.id.imgHighlight);
         imgHighlight.setOnClickListener(this);
         // layouts
@@ -103,6 +106,10 @@ public class ItemManagerViewHolder extends RecyclerView.ViewHolder implements Vi
         return imgPublish;
     }
 
+    public ImageView getImgJoin() {
+        return imgJoin;
+    }
+
     public ImageView getImgRestore() {
         return imgRestore;
     }
@@ -133,6 +140,9 @@ public class ItemManagerViewHolder extends RecyclerView.ViewHolder implements Vi
                 break;
             case R.id.imgRestore:
                 listener.restoreClicked(this.getLayoutPosition());
+                break;
+            case R.id.imgJoin:
+                listener.joinClicked(this.getLayoutPosition());
                 break;
             case R.id.imgPublish:
                 listener.publishClicked(this.getLayoutPosition());

@@ -20,6 +20,7 @@ import androidx.lifecycle.Observer;
 import com.manech.manechapp.MainActivity;
 import com.manech.manechapp.R;
 import com.manech.manechapp.data.Item;
+import com.manech.manechapp.helper.HtmlDescription;
 import com.manech.manechapp.helper.MyUtils;
 import com.manech.manechapp.model.UserViewModel;
 import com.manech.manechapp.view.EditHtmlDialog;
@@ -123,7 +124,7 @@ public class ItemBuyFragment extends Fragment {
             @Override
             public void onOkClick(String editedHtml) {
                 htmlDescription = editedHtml;
-                webViewDescription.loadDataWithBaseURL(null, editedHtml, "text/html", "UTF-8", null);
+                HtmlDescription.render(webViewDescription, editedHtml);
             }
         });
         dialog.show(getActivity().getSupportFragmentManager(), "edit_html_dialog");
@@ -269,7 +270,7 @@ public class ItemBuyFragment extends Fragment {
             txtShippingFee.setText("" + currentItem.getShipping());
             htmlDescription = currentItem.getDescription();
 
-            webViewDescription.loadDataWithBaseURL(null, htmlDescription, "text/html", "UTF-8", null);
+            HtmlDescription.render(webViewDescription, htmlDescription);
         }
     }
 }

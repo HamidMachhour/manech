@@ -42,6 +42,10 @@ import com.manech.manechapp.view.item.ItemsFragment;
 
 import net.glxn.qrgen.android.QRCode;
 
+import android.widget.Button;
+import android.widget.LinearLayout;
+import com.manech.manechapp.data.Status;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -85,6 +89,7 @@ public class SellFragment extends Fragment implements SellsClickListener {
     private ProgressDialog mDialog;
 
     private Order currentOrder;
+    private ViewGroup statusActionsLayout;
 
 
     @Override
@@ -142,7 +147,9 @@ public class SellFragment extends Fragment implements SellsClickListener {
 
                     tvTotalPrice.setText(order.getPrice() + "");
 
-                    tvCurrentState.setText(order.getOrderStatusList().get(0).getStatus().name());
+                    tvCurrentState.setText(order.getOrderStatusList().get(0).getStatus()
+                            .getLocalizedName(requireContext()));
+                    buildStatusActions(order.getOrderStatusList().get(0).getStatus());
 
                     sellLineListAdapter = new SellLineListAdapter(order.getOrderLineList(), SellFragment.this);
                     sellLinesRecyclerView.setAdapter(sellLineListAdapter);
@@ -190,6 +197,27 @@ public class SellFragment extends Fragment implements SellsClickListener {
         };
     }
 
+    private void buildStatusActions(Status current) {
+        statusActionsLayout.removeAllViews();
+        final Status[] next = current.nextStatuses();
+        statusActionsLayout.setVisibility(next.length == 0 ? View.GONE : View.VISIBLE);
+        for (Status status : next) {
+            final Button button = new Button(getContext());
+            button.setText(getString(R.string.mark_as, status.getLocalizedName(requireContext())));
+            button.setLayoutParams(new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
+            button.setOnClickListener(v -> new AlertDialog.Builder(getContext())
+                    .setMessage(getString(R.string.confirm_status_change,
+                            status.getLocalizedName(requireContext())))
+                    .setPositiveButton(android.R.string.ok, (d, w) -> {
+                        orderViewModel.changeOrderStatus(currentOrder.getId(), status);
+                        Toast.makeText(getContext(), R.string.status_updated, Toast.LENGTH_SHORT).show();
+                    })
+                    .setNegativeButton(android.R.string.cancel, null)
+                    .show());
+            statusActionsLayout.addView(button);
+        }
+    }
+
     private void updateOrder() {
         if(currentOrder!=null) {
             currentOrder.setFee(Double.parseDouble(txtOrderFee.getText().toString()));
@@ -227,6 +255,7 @@ public class SellFragment extends Fragment implements SellsClickListener {
 
         tvTotalPrice = view.findViewById(R.id.tvTotalPrice);
         tvCurrentState = view.findViewById(R.id.tvOrderStatus);
+        statusActionsLayout = view.findViewById(R.id.sellStatusActions);
 
         imgHighlight = view.findViewById(R.id.imgHighlight);
         imgHighlight.setOnClickListener(onClickListener);
@@ -303,11 +332,11 @@ public class SellFragment extends Fragment implements SellsClickListener {
 
     private void showQRCode() {
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-        builder.setPositiveButton("Print", new DialogInterface.OnClickListener() {
+        builder.setPositiveButton(R.string.print, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
             }
-        }).setNegativeButton("No thanks", new DialogInterface.OnClickListener() {
+        }).setNegativeButton(R.string.no_thanks, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
             }

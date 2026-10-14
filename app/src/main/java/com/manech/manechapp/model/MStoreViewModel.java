@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel;
 
 import com.manech.manechapp.data.ManechStore;
 import com.manech.manechapp.data.User;
+import com.manech.manechapp.repository.ItemRepository;
 import com.manech.manechapp.repository.ManechStoreRepository;
 
 import java.util.List;
@@ -15,11 +16,13 @@ public class MStoreViewModel extends ViewModel {
 
     // REPOSITORIES
     private ManechStoreRepository repository;
+    private ItemRepository itemRepository;
     private Executor executor;
 
     // DATA
     private MutableLiveData<List<ManechStore>> storesMutableLiveData = new MutableLiveData<List<ManechStore>>();
     private MutableLiveData<ManechStore> storeMutableLiveData = new MutableLiveData<ManechStore>();
+    private MutableLiveData<ManechStore> copiedStoreMutableLiveData = new MutableLiveData<>();
     ManechStore currentStore;
 
     public void setCurrentStore(ManechStore currentStore) {
@@ -28,6 +31,10 @@ public class MStoreViewModel extends ViewModel {
 
     public void setRepository(ManechStoreRepository repository) {
         this.repository = repository;
+    }
+
+    public void setItemRepository(ItemRepository itemRepository) {
+        this.itemRepository = itemRepository;
     }
 
     public void setExecutor(Executor executor) {
@@ -55,9 +62,29 @@ public class MStoreViewModel extends ViewModel {
 
     public void fetchTrash(UUID userId) {
         executor.execute(() -> {
-                    this.storesMutableLiveData.postValue(repository.storesInTrash(userId));
-                }
-        );
+            this.storesMutableLiveData.postValue(repository.storesInTrash(userId));
+        });
+    }
+
+    public void fetchPublicStores() {
+        executor.execute(() -> {
+            List<ManechStore> stores = repository.fetchPublicStores();
+            for (ManechStore store : stores) {
+                store.setAddress(repository.fetchAddress(store.getAddressId()));
+                store.setDefaultImage(repository.fetchImage(store.getImageId()));
+            }
+            storesMutableLiveData.postValue(stores);
+        });
+    }
+
+    public void copyPublicStore(ManechStore source, UUID ownerId) {
+        executor.execute(() -> {
+            ManechStore copy = repository.copyPublicStore(source, ownerId);
+            if (copy != null) {
+                itemRepository.duplicateItems(source.getId(), copy.getId());
+            }
+            copiedStoreMutableLiveData.postValue(copy);
+        });
     }
 
     public void insert(ManechStore store) {
@@ -96,6 +123,10 @@ public class MStoreViewModel extends ViewModel {
     */
     public MutableLiveData<ManechStore> getStoreMutableLiveData() {
         return storeMutableLiveData;
+    }
+
+    public MutableLiveData<ManechStore> getCopiedStoreMutableLiveData() {
+        return copiedStoreMutableLiveData;
     }
 
     public void populate(UUID userId) {

@@ -41,7 +41,8 @@ public class SelledOrderStatusListAdapter extends RecyclerView.Adapter<OrderStat
     @Override
     public void onBindViewHolder(@NonNull OrderStatusViewHolder holder, int position) {
         OrderStatus orderStatus = orderStatusList.get(position);
-        holder.getTvStatus().setText(orderStatus.getStatus().name());
+        holder.getTvStatus().setText(orderStatus.getStatus()
+                .getLocalizedName(holder.itemView.getContext()));
         holder.getTvDate().setText(Converters.fromDate(orderStatus.getStatusDate()) +"");
     }
 

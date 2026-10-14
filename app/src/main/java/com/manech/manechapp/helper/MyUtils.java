@@ -51,57 +51,89 @@ public class MyUtils {
 
     // method to get image size in bytes
     public static long getImageSize(Context mContext, Uri uri) {
-        Cursor cursor = mContext.getContentResolver().query(uri, null, null, null, null);
-        int sizeIndex = cursor.getColumnIndex(OpenableColumns.SIZE);
-        cursor.moveToFirst();
-        long imageSize = cursor.getLong(sizeIndex);
-        cursor.close();
-        return imageSize;
+        if (uri == null) {
+            return Long.MAX_VALUE;
+        }
+        try (Cursor cursor = mContext.getContentResolver().query(uri, null, null, null, null)) {
+            if (cursor != null && cursor.moveToFirst()) {
+                int sizeIndex = cursor.getColumnIndex(OpenableColumns.SIZE);
+                if (sizeIndex >= 0 && !cursor.isNull(sizeIndex)) {
+                    return cursor.getLong(sizeIndex);
+                }
+            }
+        }
+        return Long.MAX_VALUE;
     }
 
     public static void loadResourceImage(Resource resource, ImageView imageView) {
-        ViewTreeObserver vto = imageView.getViewTreeObserver();
-        vto.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+        Picasso.get().cancelRequest(imageView);
+        if (resource == null || resource.getUri() == null) {
+            imageView.setImageResource(R.drawable.ic_manech_logo);
+            return;
+        }
+        final String source = resource.getUri();
+        imageView.setTag(R.id.imgItem, source);
+        final Uri imageUri = source.startsWith("http") ? Uri.parse(source) : Uri.fromFile(new File(source));
+
+        final Runnable load = () -> {
+            // the view may have been recycled for another item meanwhile
+            if (!source.equals(imageView.getTag(R.id.imgItem))) {
+                return;
+            }
+            int width = imageView.getWidth();
+            if (width > 0) {
+                Picasso.get().load(imageUri)
+                        .resize(width, width * 3 / 4)
+                        .centerCrop()
+                        .error(R.drawable.ic_manech_logo)
+                        .into(imageView);
+            } else {
+                Picasso.get().load(imageUri)
+                        .error(R.drawable.ic_manech_logo)
+                        .into(imageView);
+            }
+        };
+
+        if (imageView.getWidth() > 0) {
+            load.run();
+            return;
+        }
+        imageView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
             public void onGlobalLayout() {
-
-                Uri imageUri = Uri.parse(resource.getUri());
-                if (!resource.getUri().startsWith("http")) {
-                    imageUri = Uri.fromFile(new File(resource.getUri()));
+                if (imageView.getViewTreeObserver().isAlive()) {
+                    imageView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
                 }
-                int width = imageView.getWidth();
-                int height = width * (3 / 4);
-                if (width > 0) {
-                    Picasso.get().load(imageUri)
-                            .resize(width, height)
-                            .centerCrop()
-                            //.placeholder(R.drawable.ic_manech_logo)
-                            .error(R.drawable.ic_manech_logo)
-                            .into(imageView);
-                } else {
-                    Picasso.get().load(imageUri)
-                            //.placeholder(R.drawable.ic_manech_logo)
-                            .error(R.drawable.ic_manech_logo)
-                            .into(imageView);
-                }
-                // Remove the OnGlobalLayoutListener to prevent it from being called multiple times
-                imageView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                load.run();
             }
         });
     }
 
 
-    public static String getRealPathFromUri(Context context,Uri uri) {
-        String filePath = "";
-        String[] projection = {MediaStore.Images.Media.DATA};
-        Cursor cursor = context.getContentResolver().query(uri, projection, null, null, null);
-        if (cursor != null) {
-            int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
-            if (cursor.moveToFirst()) {
-                filePath = cursor.getString(column_index);
-            }
-            cursor.close();
+    // Copies the picked image into app storage and returns its absolute path (null on failure)
+    public static String getRealPathFromUri(Context context, Uri uri) {
+        if (uri == null) {
+            return null;
         }
-        return filePath;
+        File dir = new File(context.getFilesDir(), "images");
+        if (!dir.exists() && !dir.mkdirs()) {
+            return null;
+        }
+        File target = new File(dir, UUID.randomUUID().toString() + ".img");
+        try (java.io.InputStream in = context.getContentResolver().openInputStream(uri);
+             java.io.OutputStream out = new java.io.FileOutputStream(target)) {
+            if (in == null) {
+                return null;
+            }
+            byte[] buffer = new byte[8192];
+            int read;
+            while ((read = in.read(buffer)) != -1) {
+                out.write(buffer, 0, read);
+            }
+            return target.getAbsolutePath();
+        } catch (java.io.IOException e) {
+            target.delete();
+            return null;
+        }
     }
 }

@@ -2,6 +2,7 @@ package com.manech.manechapp;
 
 import android.app.AlertDialog;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
@@ -25,6 +26,7 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.manech.manechapp.data.User;
 import com.manech.manechapp.helper.SecureSharedPref;
+import com.manech.manechapp.helper.LocaleHelper;
 import com.manech.manechapp.model.Injection;
 import com.manech.manechapp.model.UserViewModel;
 import com.manech.manechapp.model.ViewModelFactory;
@@ -32,6 +34,8 @@ import com.manech.manechapp.service.ManechService;
 import com.manech.manechapp.view.item.ItemsFragment;
 import com.manech.manechapp.view.item.manage.ItemsManagerFragment;
 import com.manech.manechapp.view.mstore.StoresFragment;
+import com.manech.manechapp.view.mstore.StoreBrowserFragment;
+import com.manech.manechapp.view.mstore.FavoriteStoresFragment;
 import com.manech.manechapp.view.order.OrdersFragment;
 import com.manech.manechapp.view.order.sell.SellsFragment;
 import com.manech.manechapp.view.user.DashboardFragment;
@@ -55,6 +59,11 @@ public class MainActivity extends AppCompatActivity {
     // private User currentUser;
 
     private boolean fetchUserInvoked = false;
+
+    @Override
+    protected void attachBaseContext(Context newBase) {
+        super.attachBaseContext(LocaleHelper.wrap(newBase));
+    }
 
     public void showProgressBar() {
         progressBar.setVisibility(View.VISIBLE);
@@ -151,6 +160,28 @@ public class MainActivity extends AppCompatActivity {
             case R.id.action_manage_stores:
                 initFragment(StoresFragment.class, getString(R.string.manage_stores_edit_mode));
                 return true;
+            case R.id.action_browse_stores:
+                initFragment(StoreBrowserFragment.class, getString(R.string.public_stores_view));
+                return true;
+            case R.id.action_favorite_stores:
+                initFragment(FavoriteStoresFragment.class, getString(R.string.favorite_stores_view));
+                return true;
+            case R.id.action_trash_items: {
+                Bundle args = new Bundle();
+                args.putBoolean(ItemsManagerFragment.ARG_TRASH_MODE, true);
+                initFragment(ItemsManagerFragment.class, getString(R.string.items_trash_view), args);
+                return true;
+            }
+            case R.id.action_trash_stores: {
+                Bundle args = new Bundle();
+                args.putBoolean(StoresFragment.ARG_TRASH_MODE, true);
+                initFragment(StoresFragment.class, getString(R.string.stores_trash_view), args);
+                return true;
+            }
+            case R.id.action_favorite_items:
+                sharedPref.putInt(getString(R.string.items_view_mode), ItemsFragment.FAVORITES_MODE);
+                initFragment(ItemsFragment.class, getString(R.string.favorite_items_view));
+                return true;
 
             case R.id.action_buy_items:
                 sharedPref.putInt(getString(R.string.items_view_mode), ItemsFragment.BUY_MODE);
@@ -171,9 +202,33 @@ public class MainActivity extends AppCompatActivity {
             case R.id.action_logout:
                 logout();
                 return true;
+            case R.id.action_language:
+                showLanguageChooser();
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    public void showLanguageChooser() {
+        String[] labels = {
+                getString(R.string.language_english),
+                getString(R.string.language_arabic)
+        };
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.language_dialog_title)
+                .setSingleChoiceItems(labels,
+                        LocaleHelper.ARABIC.equals(LocaleHelper.getLanguage(this)) ? 1 : 0,
+                        (dialog, which) -> {
+                            String language = which == 1 ? LocaleHelper.ARABIC : LocaleHelper.ENGLISH;
+                            dialog.dismiss();
+                            if (!language.equals(LocaleHelper.getLanguage(this))) {
+                                LocaleHelper.setLanguage(this, language);
+                                recreate();
+                            }
+                        })
+                .setNegativeButton(android.R.string.cancel, null)
+                .show();
     }
 
     public <T extends ViewModel> T getViewModel(Class<T> viewModelClass) {
@@ -181,7 +236,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public <T extends Fragment> void initFragment(Class<T> fragmentClass, String backStateName) {
+        initFragment(fragmentClass, backStateName, null);
+    }
 
+    public <T extends Fragment> void initFragment(Class<T> fragmentClass, String backStateName, Bundle arguments) {
         showProgressBar();
 
         FragmentManager manager = getSupportFragmentManager();
@@ -193,6 +251,9 @@ public class MainActivity extends AppCompatActivity {
             FragmentTransaction ft = manager.beginTransaction();
             try {
                 T fragment = fragmentClass.newInstance();
+                if (arguments != null) {
+                    fragment.setArguments(arguments);
+                }
                 ft.replace(R.id.main_frame_layout, fragment, backStateName);
                 if (!backStateName.equals(getString(R.string.login_fragment)) &&
                         !backStateName.equals(getString(R.string.register_fragment)))
@@ -216,8 +277,8 @@ public class MainActivity extends AppCompatActivity {
         } else {
             // Otherwise, ask user if he wants to leave
             new AlertDialog.Builder(this)
-                    .setTitle("Exit")
-                    .setMessage("Exit Manech?")
+                    .setTitle(R.string.exit_title)
+                    .setMessage(R.string.exit_confirm)
                     .setNegativeButton(android.R.string.no, null)
                     .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
 

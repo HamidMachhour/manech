@@ -12,7 +12,6 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -25,10 +24,16 @@ import com.manech.manechapp.data.User;
 import com.manech.manechapp.model.UserViewModel;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 public class StoresFragment extends Fragment {
+    public static final String ARG_TRASH_MODE = "trash_mode";
+    private boolean trashMode = false;
+    // stores moved to trash locally, kept so that Save still persists them
+    private final List<ManechStore> hiddenStores = new ArrayList<>();
     private UserViewModel userViewModel;
 
     private RecyclerView storesListView;
@@ -40,6 +45,7 @@ public class StoresFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        trashMode = getArguments() != null && getArguments().getBoolean(ARG_TRASH_MODE, false);
         userViewModel = ((MainActivity) getActivity()).getViewModel(UserViewModel.class);
         userViewModel.getUserMutableLiveData().observe(this, new Observer<User>() {
             @Override
@@ -75,8 +81,15 @@ public class StoresFragment extends Fragment {
         if (currentUser != null && currentUser.getStores() != null) {
             adapter.getStoreList().clear();
             adapter.setDefaultStore(currentUser.getStoreId());
-            adapter.getStoreList().addAll(currentUser.getStores());
-            adapter.notifyDataSetChanged();
+            hiddenStores.clear();
+            for (ManechStore store : currentUser.getStores()) {
+                if ((store.getTrashDate() != null) == trashMode) {
+                    adapter.getStoreList().add(store);
+                } else {
+                    hiddenStores.add(store);
+                }
+            }
+            adapter.refresh();
         }
     }
 
@@ -84,7 +97,7 @@ public class StoresFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         setHasOptionsMenu(true);
-        getActivity().setTitle(R.string.manage_stores);
+        getActivity().setTitle(trashMode ? R.string.manage_stores_in_trash : R.string.manage_stores);
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_stores, container, false);
 
@@ -94,6 +107,7 @@ public class StoresFragment extends Fragment {
 
         adapter = new StoreListAdapter(new ArrayList<>(), StoresFragment.this, null);
         storesListView.setAdapter(adapter);
+        StoreFilterCard.bind(view, trashMode ? 0 : R.string.published_only, adapter::setCriteria);
 
         return view;
     }
@@ -140,45 +154,50 @@ public class StoresFragment extends Fragment {
     private void addAction() {
         adapter.getStoreList().add(new ManechStore("Store Name",
                 "Store Description", currentUser.getId(), null));
-        adapter.notifyDataSetChanged();
+        adapter.refresh();
     }
 
     private void saveAction() {
 
         ((MainActivity)getActivity()).showProgressBar();
 
-        userViewModel.updateCurrentUser(null, adapter.getStoreList(), null);
+        final List<ManechStore> stores = new ArrayList<>(adapter.getStoreList());
+        stores.addAll(hiddenStores);
+        userViewModel.updateCurrentUser(null, stores, null);
     }
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         menu.clear();
         inflater.inflate(R.menu.stores_menu, menu);
-        MenuItem searchMenuItem = menu.findItem(R.id.action_search);
-        final SearchView searchView = (SearchView) searchMenuItem.getActionView();
-        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-            @Override
-            public boolean onQueryTextSubmit(String query) {
-                return false;
-            }
-
-            @Override
-            public boolean onQueryTextChange(String newText) {
-                adapter.getFilter().filter(newText);
-                return true;
-            }
-        });
+        if (trashMode) {
+            menu.findItem(R.id.action_save).setVisible(false);
+            menu.findItem(R.id.action_add).setVisible(false);
+        }
         super.onCreateOptionsMenu(menu, inflater);
     }
 
 
     public void duplicateClicked(int p) {
         adapter.getStoreList().add(adapter.getItem(p).clone());
-        adapter.notifyDataSetChanged();
+        adapter.refresh();
     }
 
     public void deleteClicked(int p) {
         ManechStore store = adapter.getItem(p);
+        if (trashMode) {
+            new AlertDialog.Builder(requireActivity())
+                    .setTitle(getString(R.string.delete_single_store))
+                    .setMessage(R.string.delete_store_confirm)
+                    .setIcon(android.R.drawable.ic_dialog_alert)
+                    .setPositiveButton(android.R.string.yes, (dialog, which) -> {
+                        ((MainActivity) requireActivity()).showProgressBar();
+                        refreshInvoked = true;
+                        userViewModel.deleteStoreForever(store.getId());
+                    })
+                    .setNegativeButton(android.R.string.no, null).show();
+            return;
+        }
         new AlertDialog.Builder(requireActivity())
                 .setTitle(getString(R.string.delete_single_store))
                 .setMessage(R.string.delete_store_confirm)
@@ -191,7 +210,7 @@ public class StoresFragment extends Fragment {
                         }
 
                         adapter.getStoreList().remove(store);
-                        adapter.notifyDataSetChanged();
+                        adapter.refresh();
                     }
                 })
                 .setNegativeButton(android.R.string.no, null).show();
@@ -201,24 +220,26 @@ public class StoresFragment extends Fragment {
         final UUID storeId = adapter.getItem(layoutPosition).getId();
         currentUser.setStoreId(storeId);
         adapter.setDefaultStore(storeId);
-        adapter.notifyDataSetChanged();
+        adapter.refresh();
     }
 
     public void moveToTrashClicked(int p) {
 
         new AlertDialog.Builder(requireActivity())
-                .setTitle("Move to Trash")
-                .setMessage("Move this store to the Trash?")
+                .setTitle(R.string.move_to_trash_title)
+                .setMessage(R.string.move_store_to_trash_confirm)
                 .setIcon(android.R.drawable.ic_dialog_alert)
                 .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int whichButton) {
                         final ManechStore toTrash = adapter.getItem(p);
                         toTrash.setTrashDate(new Date());
+                        adapter.getStoreList().remove(toTrash);
+                        hiddenStores.add(toTrash);
                         if (toTrash.getId().equals(currentUser.getStoreId())) {
                             currentUser.setStoreId(null);
                             adapter.setDefaultStore(null);
                         }
-                        adapter.notifyDataSetChanged();
+                        adapter.refresh();
                     }
                 })
                 .setNegativeButton(android.R.string.no, null).show();
@@ -227,32 +248,37 @@ public class StoresFragment extends Fragment {
     public void restoreClicked(int position) {
         ManechStore fromTrash = adapter.getItem(position);
         fromTrash.setTrashDate(null);
-        adapter.notifyDataSetChanged();
+        if (trashMode) {
+            ((MainActivity) requireActivity()).showProgressBar();
+            userViewModel.updateCurrentUser(null, Collections.singletonList(fromTrash), null);
+            return;
+        }
+        adapter.refresh();
     }
 
     public void publishClicked(int position) {
         ManechStore store = adapter.getItem(position);
         if (store.getPublishDate() == null) {
             new AlertDialog.Builder(requireActivity())
-                    .setTitle("Publishing")
-                    .setMessage("Publish this Store?")
+                    .setTitle(R.string.publish_store_title)
+                    .setMessage(R.string.publish_store_confirm)
                     .setIcon(android.R.drawable.ic_dialog_alert)
                     .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int whichButton) {
                             store.setPublishDate(new Date());
-                            adapter.notifyDataSetChanged();
+                            adapter.refresh();
                         }
                     })
                     .setNegativeButton(android.R.string.no, null).show();
         } else {
             new AlertDialog.Builder(requireActivity())
-                    .setTitle("Unpublishing")
-                    .setMessage("Unpublish this Store?")
+                    .setTitle(R.string.unpublish_store_title)
+                    .setMessage(R.string.unpublish_store_confirm)
                     .setIcon(android.R.drawable.ic_dialog_alert)
                     .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int whichButton) {
                             store.setPublishDate(null);
-                            adapter.notifyDataSetChanged();
+                            adapter.refresh();
                         }
                     })
                     .setNegativeButton(android.R.string.no, null).show();

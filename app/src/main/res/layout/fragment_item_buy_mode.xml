@@ -16,10 +16,11 @@
             android:gravity="center"
             android:orientation="horizontal">
 
-            <ImageView
-                android:id="@+id/imgItem"
+            <com.smarteist.autoimageslider.SliderView
+                android:id="@+id/imagesSliderView"
                 android:layout_width="match_parent"
-                android:layout_height="200dp" />
+                android:layout_height="300dp"
+                android:background="@drawable/ic_manech_logo" />
         </LinearLayout>
 
         <LinearLayout
@@ -32,7 +33,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:labelFor="@id/txtItemTitle"
-                android:text="Title"
+                android:text="@string/field_title"
                 android:textColor="@color/colorAccent" />
 
             <EditText
@@ -65,7 +66,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:labelFor="@id/txtItemCode"
-                    android:text="Code"
+                    android:text="@string/field_code"
                     android:textColor="@color/colorAccent" />
 
                 <EditText
@@ -82,7 +83,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:labelFor="@id/txtQuantity"
-                    android:text="Quantity"
+                    android:text="@string/column_quantity"
                     android:textColor="@color/colorAccent" />
 
                 <EditText
@@ -107,7 +108,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:labelFor="@id/txtPrice"
-                    android:text="Price"
+                    android:text="@string/column_price"
                     android:textColor="@color/colorAccent" />
 
                 <EditText
@@ -124,7 +125,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:labelFor="@id/txtShippingFee"
-                    android:text="Shipping Fee"
+                    android:text="@string/shipping_fee"
                     android:textColor="@color/colorAccent" />
 
                 <EditText
@@ -157,7 +158,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:labelFor="@id/txtMinQty"
-                    android:text="Min Qty"
+                    android:text="@string/min_qty"
                     android:textColor="@color/colorAccent"
                     android:visibility="visible" />
 
@@ -176,7 +177,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:labelFor="@id/txtMaxQty"
-                    android:text="Max Qty"
+                    android:text="@string/max_qty"
                     android:textColor="@color/colorAccent"
                     android:visibility="visible" />
 
@@ -203,7 +204,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:labelFor="@id/txtBasePrice"
-                    android:text="Base Price"
+                    android:text="@string/base_price"
                     android:textColor="@color/colorAccent"
                     android:visibility="visible" />
 
@@ -222,7 +223,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:labelFor="@id/txtLocation"
-                    android:text="Location number"
+                    android:text="@string/location_number"
                     android:textColor="@color/colorAccent"
                     android:visibility="visible" />
 
@@ -244,19 +245,14 @@
             android:id="@+id/tv9"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:labelFor="@id/txtItemDescription"
-            android:text="Description"
+            android:text="@string/description"
             android:textColor="@color/colorAccent" />
 
-        <EditText
+        <WebView
             android:id="@+id/txtItemDescription"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:enabled="false"
-            android:inputType="none|textWebEditText|textMultiLine"
-            android:scrollbars="horizontal|vertical"
-            android:textColor="@color/colorPrimaryDark"
-            android:textSize="16sp" />
+            android:layout_height="180dp"
+            android:autofillHints="" />
 
         <View
             android:id="@+id/view_gap"

@@ -35,6 +35,8 @@ public class OrdersFragment extends Fragment implements LineClicked{
     private OrderListAdapter orderListAdapter;
 
     private ProgressDialog mDialog;
+    private OrderFilterCard filterCard;
+    private List<Order> allOrders = new java.util.ArrayList<>();
 
     private SecureSharedPref sharedPref;
 
@@ -54,8 +56,8 @@ public class OrdersFragment extends Fragment implements LineClicked{
                     }*/
                     getActivity().setTitle(getString(R.string.my_orders));
 
-                    orderListAdapter=new OrderListAdapter(orders,OrdersFragment.this);
-                    orderListRecyclerView.setAdapter(orderListAdapter);
+                    allOrders = orders;
+                    applyFilter();
                 }
                 hideProgressDialog();
             }
@@ -76,6 +78,8 @@ public class OrdersFragment extends Fragment implements LineClicked{
         orderListRecyclerView.setHasFixedSize(true);
         orderListRecyclerView.setLayoutManager(new LinearLayoutManager(view.getContext()));
 
+        filterCard = OrderFilterCard.bind(view, this::applyFilter);
+
         showProgressDialog();
         orderViewModel.fetchOrders(sharedPref.getUUID(getString(R.string.current_user_id), null));
         return view;
@@ -87,6 +91,12 @@ public class OrdersFragment extends Fragment implements LineClicked{
         hideProgressDialog();
     }
 
+
+    private void applyFilter() {
+        if (filterCard == null || orderListRecyclerView == null) return;
+        orderListAdapter = new OrderListAdapter(filterCard.apply(allOrders), OrdersFragment.this);
+        orderListRecyclerView.setAdapter(orderListAdapter);
+    }
 
     private void showProgressDialog() {
         mDialog = new ProgressDialog(getContext());

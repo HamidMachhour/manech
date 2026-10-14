@@ -4,5 +4,6 @@ public enum ItemFilter{
     ALL,
     ACTIVE,
     IN_TRASH,
-    PUBLISHED
+    PUBLISHED,
+    ORPHAN
 }

@@ -35,6 +35,9 @@ public interface CartDAO {
     @Query("select * from Item where id=:itemId ")
     Item itemById(UUID itemId);
 
+    @Query("update Item set quantity = max(0, coalesce(quantity, 0) + :delta) where id=:itemId")
+    void adjustItemStock(UUID itemId, double delta);
+
     @Delete
     int deleteCartItem(CartItem cartItem);
 

@@ -204,8 +204,8 @@ public class ItemImagesFragment extends Fragment implements ImagesManager {
     private void showAddResourceDialog() {
         // Create a new dialog to display options for adding a new resource
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setTitle("Add Images");
-        builder.setItems(new CharSequence[]{"From Gallery", "From URL"}, new DialogInterface.OnClickListener() {
+        builder.setTitle(R.string.add_images);
+        builder.setItems(new CharSequence[]{getString(R.string.from_gallery), getString(R.string.from_url)}, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 switch (i) {
@@ -214,7 +214,7 @@ public class ItemImagesFragment extends Fragment implements ImagesManager {
                         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
                         intent.setType("image/*");
                         intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
-                        startActivityForResult(Intent.createChooser(intent, "Select Images"), REQUEST_CODE_PICK_IMAGES);
+                        startActivityForResult(Intent.createChooser(intent, getString(R.string.select_images)), REQUEST_CODE_PICK_IMAGES);
                         break;
                     case 1:
                         // Add a resource from a URL
@@ -229,14 +229,14 @@ public class ItemImagesFragment extends Fragment implements ImagesManager {
     private void showAddResourceFromUrlDialog() {
         // Create a new dialog to input a URL for the new resource
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setTitle("Add image from URL");
+        builder.setTitle(R.string.add_image_from_url);
 
         // Add an EditText view for inputting the URL
         final EditText urlEditText = new EditText(getActivity());
-        urlEditText.setHint("Enter URL");
+        urlEditText.setHint(R.string.enter_url);
         builder.setView(urlEditText);
 
-        builder.setPositiveButton("Add", new DialogInterface.OnClickListener() {
+        builder.setPositiveButton(R.string.add, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 // Add the new resource with the provided URL
@@ -249,7 +249,7 @@ public class ItemImagesFragment extends Fragment implements ImagesManager {
             }
         });
 
-        builder.setNegativeButton("Cancel", null);
+        builder.setNegativeButton(R.string.cancel_option, null);
         builder.create().show();
     }
 
@@ -266,7 +266,9 @@ public class ItemImagesFragment extends Fragment implements ImagesManager {
                     long imageSize = MyUtils.getImageSize(getContext(), imageUri); // get image size
                     if (imageSize < 150 * 1024) { // check if image size is less than 150KB
                         String imagePath = MyUtils.getRealPathFromUri(getContext(), imageUri);
-                        adapter.getImages().add(new ItemImage(imagePath, currentItem.getId()));
+                        if (imagePath != null) {
+                            adapter.getImages().add(new ItemImage(imagePath, currentItem.getId()));
+                        }
                         adapter.notifyDataSetChanged();
 
                         actionInvoked=true;
@@ -279,13 +281,15 @@ public class ItemImagesFragment extends Fragment implements ImagesManager {
                 if (imageSize < 150 * 1024) { // check if image size is less than 150KB
 
                     String imageUri = MyUtils.getRealPathFromUri(getContext(), data.getData());
-                    adapter.getImages().add(new ItemImage(imageUri, currentItem.getId()));
+                    if (imageUri != null) {
+                        adapter.getImages().add(new ItemImage(imageUri, currentItem.getId()));
+                    }
                     adapter.notifyDataSetChanged();
 
                     actionInvoked=true;
 
                 } else {
-                    Toast.makeText(getContext(), "Image size must be under 150 KB!", Toast.LENGTH_LONG).show();
+                    Toast.makeText(getContext(), R.string.image_size_limit, Toast.LENGTH_LONG).show();
                 }
             }
         }

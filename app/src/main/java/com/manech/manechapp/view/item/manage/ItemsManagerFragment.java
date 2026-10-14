@@ -2,6 +2,7 @@ package com.manech.manechapp.view.item.manage;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -17,7 +18,6 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.recyclerview.widget.GridLayoutManager;
@@ -29,15 +29,25 @@ import com.manech.manechapp.R;
 import com.manech.manechapp.data.Item;
 import com.manech.manechapp.data.ManechStore;
 import com.manech.manechapp.helper.ItemFilter;
+import com.manech.manechapp.helper.ItemQrTransfer;
 import com.manech.manechapp.model.UserViewModel;
+import com.google.mlkit.vision.barcode.common.Barcode;
+import com.google.mlkit.vision.codescanner.GmsBarcodeScannerOptions;
+import com.google.mlkit.vision.codescanner.GmsBarcodeScanning;
+
+import org.json.JSONException;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
+import java.util.UUID;
 
 public class ItemsManagerFragment extends Fragment {
+    public static final String ARG_TRASH_MODE = "trash_mode";
+    private boolean trashMode = false;
 
 
-    private ItemFilter filter = ItemFilter.ALL;
+    private ItemFilter filter = ItemFilter.ACTIVE;
 
     private UserViewModel userViewModel;
     ManechStore store;
@@ -49,12 +59,16 @@ public class ItemsManagerFragment extends Fragment {
     private ImageView imgArrow1;
     private LinearLayout filterHeader;
     private RadioGroup filterRadioGroup;
+    private View filterContent;
+    private EditText searchInput;
     private View.OnClickListener onClickListener;
     private RadioGroup.OnCheckedChangeListener onCheckedChangeListener;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        trashMode = getArguments() != null && getArguments().getBoolean(ARG_TRASH_MODE, false);
+        filter = trashMode ? ItemFilter.IN_TRASH : ItemFilter.ACTIVE;
         userViewModel = ((MainActivity) getActivity()).getViewModel(UserViewModel.class);
         userViewModel.getStoreUpdateStatus().observe(this, new Observer<Boolean>() {
             @Override
@@ -84,6 +98,7 @@ public class ItemsManagerFragment extends Fragment {
                 switch (v.getId()) {
                     case R.id.filter_header:
                         collapseCardView(imgArrow1, filterRadioGroup);
+                        filterContent.setVisibility(filterRadioGroup.getVisibility());
                         break;
                 }
             }
@@ -101,6 +116,9 @@ public class ItemsManagerFragment extends Fragment {
                     case R.id.radioTrash:
                         filter = ItemFilter.IN_TRASH;
                         break;
+                    case R.id.radioOrphan:
+                        filter = ItemFilter.ORPHAN;
+                        break;
                     case R.id.radioPublished:
                         filter = ItemFilter.PUBLISHED;
                         break;
@@ -108,6 +126,84 @@ public class ItemsManagerFragment extends Fragment {
                 refreshAction(true, filter);
             }
         };
+    }
+
+    private void setupFilterControls(View view) {
+        searchInput = view.findViewById(R.id.edit_item_search);
+        final EditText minInput = view.findViewById(R.id.edit_min_price);
+        final EditText maxInput = view.findViewById(R.id.edit_max_price);
+        final android.widget.CheckBox inStock = view.findViewById(R.id.check_in_stock);
+        final android.widget.Spinner sort = view.findViewById(R.id.spinner_sort);
+        sort.setAdapter(android.widget.ArrayAdapter.createFromResource(requireContext(),
+                R.array.item_sort_options, android.R.layout.simple_spinner_dropdown_item));
+
+        final Runnable apply = () -> adapter.setFilterCriteria(parsePrice(minInput.getText()),
+                parsePrice(maxInput.getText()), inStock.isChecked(), sort.getSelectedItemPosition());
+        final android.text.TextWatcher priceWatcher = new android.text.TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                apply.run();
+            }
+
+            @Override
+            public void afterTextChanged(android.text.Editable s) {
+            }
+        };
+        minInput.addTextChangedListener(priceWatcher);
+        maxInput.addTextChangedListener(priceWatcher);
+        inStock.setOnCheckedChangeListener((b, checked) -> apply.run());
+        sort.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(android.widget.AdapterView<?> parent, View v, int position, long id) {
+                apply.run();
+            }
+
+            @Override
+            public void onNothingSelected(android.widget.AdapterView<?> parent) {
+            }
+        });
+        searchInput.addTextChangedListener(new android.text.TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                adapter.getFilter().filter(s);
+            }
+
+            @Override
+            public void afterTextChanged(android.text.Editable s) {
+            }
+        });
+        view.findViewById(R.id.button_scan_code).setOnClickListener(v ->
+                com.google.mlkit.vision.codescanner.GmsBarcodeScanning.getClient(requireActivity()).startScan()
+                        .addOnSuccessListener(barcode -> {
+                            if (barcode.getRawValue() != null) {
+                                searchInput.setText(barcode.getRawValue());
+                            }
+                        })
+                        .addOnFailureListener(e ->
+                                Toast.makeText(requireContext(), R.string.barcode_scan_failed, Toast.LENGTH_LONG).show()));
+        view.findViewById(R.id.button_reset_filters).setOnClickListener(v -> {
+            minInput.setText("");
+            maxInput.setText("");
+            inStock.setChecked(false);
+            sort.setSelection(0);
+            searchInput.setText("");
+        });
+    }
+
+    private static Double parsePrice(CharSequence text) {
+        try {
+            return text == null || text.length() == 0 ? null : Double.valueOf(text.toString());
+        } catch (NumberFormatException e) {
+            return null;
+        }
     }
 
     private void collapseCardView(ImageView img, ViewGroup viewGroup) {
@@ -119,7 +215,7 @@ public class ItemsManagerFragment extends Fragment {
         if (store != null && store.getItems() != null) {
             adapter.getItemsList().clear();
             adapter.getItemsList().addAll(store.getItems());
-            adapter.notifyDataSetChanged();
+            adapter.refresh();
         }
     }
 
@@ -128,7 +224,7 @@ public class ItemsManagerFragment extends Fragment {
                              Bundle savedInstanceState) {
         setHasOptionsMenu(true);
 
-        getActivity().setTitle(getString(R.string.items_fragment_title));
+        getActivity().setTitle(getString(trashMode ? R.string.manage_trash_items_title : R.string.items_fragment_title));
 
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_items_manage, container, false);
@@ -138,7 +234,15 @@ public class ItemsManagerFragment extends Fragment {
         filterHeader.setOnClickListener(onClickListener);
 
         filterRadioGroup = view.findViewById(R.id.filter_radio_group);
+        filterContent = view.findViewById(R.id.manage_filter_content);
+        filterRadioGroup.check(R.id.radionActive);
         filterRadioGroup.setOnCheckedChangeListener(onCheckedChangeListener);
+        // trashed items live in their own screen
+        view.findViewById(R.id.radioAll).setVisibility(View.GONE);
+        view.findViewById(R.id.radioTrash).setVisibility(View.GONE);
+        if (trashMode) {
+            view.findViewById(R.id.filter_card).setVisibility(View.GONE);
+        }
 
         itemsListView = view.findViewById(R.id.items_list_view);
         itemsListView.setHasFixedSize(true);
@@ -146,6 +250,7 @@ public class ItemsManagerFragment extends Fragment {
         itemsListView.setLayoutManager(new LinearLayoutManager(view.getContext()));
         adapter = new ItemsManagerAdapter(new ArrayList<>(), ItemsManagerFragment.this);
         itemsListView.setAdapter(adapter);
+        setupFilterControls(view);
 
         return view;
     }
@@ -191,6 +296,12 @@ public class ItemsManagerFragment extends Fragment {
             case R.id.action_trash:
                 deleteAll();
                 return true;
+            case R.id.action_print_item_qr_codes:
+                printItemQrCodes();
+                return true;
+            case R.id.action_import_item_qr:
+                scanItemQr();
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -207,7 +318,7 @@ public class ItemsManagerFragment extends Fragment {
         if (store != null) {
             adapter.getItemsList().add(new Item("0x00000", "Item Title", "Item Description", 0.0, 0.0, 0.0,
                     1000.0, 0.0, 0.0, 1, store.getId()));
-            adapter.notifyDataSetChanged();
+            adapter.refresh();
         }
     }
 
@@ -217,7 +328,7 @@ public class ItemsManagerFragment extends Fragment {
                 new LinearLayoutManager(getContext()) :
                 new GridLayoutManager(getContext(), 2, GridLayoutManager.VERTICAL, false));
         adapter.setGridFormat(!adapter.isGridFormat());
-        adapter.notifyDataSetChanged();
+        adapter.refresh();
     }
 
     private void deleteAll() {
@@ -228,52 +339,99 @@ public class ItemsManagerFragment extends Fragment {
                 .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int whichButton) {
                         adapter.getItemsList().clear();
-                        adapter.notifyDataSetChanged();
+                        adapter.refresh();
+                        if (trashMode) {
+                            saveAction();
+                        }
                     }
                 })
                 .setNegativeButton(android.R.string.no, null).show();
+    }
+
+    private void printItemQrCodes() {
+        if (adapter == null) {
+            return;
+        }
+        List<Item> activeItems = new ArrayList<>();
+        for (Item item : adapter.getItemsList()) {
+            if (item.getTrashDate() == null) {
+                activeItems.add(item);
+            }
+        }
+        if (activeItems.isEmpty()) {
+            Toast.makeText(requireContext(), R.string.item_qr_print_empty, Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        ArrayList<String> payloads = new ArrayList<>();
+        ArrayList<String> titles = new ArrayList<>();
+        ArrayList<String> codes = new ArrayList<>();
+        try {
+            for (Item item : activeItems) {
+                payloads.add(ItemQrTransfer.encode(item));
+                titles.add(item.getTitle() == null ? "" : item.getTitle());
+                codes.add(item.getCode() == null ? "" : item.getCode());
+            }
+        } catch (JSONException exception) {
+            Toast.makeText(requireContext(), R.string.item_qr_import_invalid, Toast.LENGTH_LONG).show();
+            return;
+        }
+        Intent intent = new Intent(requireActivity(), ItemQrPrintActivity.class);
+        intent.putStringArrayListExtra(ItemQrPrintActivity.EXTRA_PAYLOADS, payloads);
+        intent.putStringArrayListExtra(ItemQrPrintActivity.EXTRA_TITLES, titles);
+        intent.putStringArrayListExtra(ItemQrPrintActivity.EXTRA_CODES, codes);
+        intent.putExtra(ItemQrPrintActivity.EXTRA_JOB_NAME, getString(R.string.item_qr_print_job));
+        startActivity(intent);
+    }
+
+    private void scanItemQr() {
+        if (store == null || store.getId() == null) {
+            Toast.makeText(requireContext(), R.string.item_qr_import_invalid, Toast.LENGTH_LONG).show();
+            return;
+        }
+        UUID currentStoreId = store.getId();
+        GmsBarcodeScannerOptions options = new GmsBarcodeScannerOptions.Builder()
+                .setBarcodeFormats(Barcode.FORMAT_QR_CODE)
+                .build();
+        GmsBarcodeScanning.getClient(requireActivity(), options).startScan()
+                .addOnSuccessListener(barcode -> {
+                    if (!isAdded()) {
+                        return;
+                    }
+                    String value = barcode == null ? null : barcode.getRawValue();
+                    try {
+                        Item importedItem = ItemQrTransfer.decode(value, currentStoreId);
+                        userViewModel.addItemToCurrentStore(importedItem);
+                        Toast.makeText(requireContext(), R.string.item_qr_import_added, Toast.LENGTH_LONG).show();
+                    } catch (JSONException exception) {
+                        Toast.makeText(requireContext(), R.string.item_qr_import_invalid, Toast.LENGTH_LONG).show();
+                    }
+                })
+                .addOnFailureListener(error -> {
+                    if (isAdded()) {
+                        Toast.makeText(requireContext(), R.string.barcode_scan_failed, Toast.LENGTH_LONG).show();
+                    }
+                });
     }
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         menu.clear();
         inflater.inflate(R.menu.items_menu_managemode, menu);
-
-
-        MenuItem searchMenuItem = menu.findItem(R.id.action_search);
-        final SearchView searchView = (SearchView) searchMenuItem.getActionView();
-        if (searchView != null) {
-            searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-                @Override
-                public boolean onQueryTextSubmit(String query) {
-                    return false;
-                }
-
-                @Override
-                public boolean onQueryTextChange(String newText) {
-                    adapter.getFilter().filter(newText);
-                    return true;
-                }
-            });
-            // Set the OnSearchClickListener for the search view
-            searchView.setOnSearchClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    // Get the EditText view from the search view
-                    EditText searchEditText = searchView.findViewById(androidx.appcompat.R.id.search_src_text);
-
-                    // Change the text color of the EditText
-                    searchEditText.setTextColor(getResources().getColor(R.color.colorPrimaryDark, null));
-                }
-            });
+        if (trashMode) {
+            menu.findItem(R.id.action_save).setVisible(false);
+            menu.findItem(R.id.action_add).setVisible(false);
+            menu.findItem(R.id.action_print_item_qr_codes).setVisible(false);
+            menu.findItem(R.id.action_import_item_qr).setVisible(false);
         }
+
         super.onCreateOptionsMenu(menu, inflater);
     }
 
 
     public void duplicateClicked(int p) {
         adapter.getItemsList().add(adapter.getItem(p).clone());
-        adapter.notifyDataSetChanged();
+        adapter.refresh();
         Toast.makeText(getContext(), getString(R.string.add_to_default_store_confirm), Toast.LENGTH_SHORT).show();
     }
 
@@ -286,7 +444,10 @@ public class ItemsManagerFragment extends Fragment {
                 .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int whichButton) {
                         adapter.getItemsList().remove(item);
-                        adapter.notifyDataSetChanged();
+                        adapter.refresh();
+                        if (trashMode) {
+                            saveAction();
+                        }
                     }
                 })
                 .setNegativeButton(android.R.string.no, null).show();
@@ -294,14 +455,14 @@ public class ItemsManagerFragment extends Fragment {
 
     public void moveToTrashClicked(int p) {
         new AlertDialog.Builder(requireActivity())
-                .setTitle("Trash")
-                .setMessage("Move this item to the Trash?")
+                .setTitle(R.string.move_to_trash_title)
+                .setMessage(R.string.move_item_to_trash_confirm)
                 .setIcon(android.R.drawable.ic_dialog_alert)
                 .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int whichButton) {
-                        Item item = adapter.getItem(p);
-                        item.setTrashDate(new Date());
-                        adapter.notifyDataSetChanged();
+                        // removed from the list: saving moves it to the trash
+                        adapter.getItemsList().remove(adapter.getItem(p));
+                        adapter.refresh();
                     }
                 })
                 .setNegativeButton(android.R.string.no, null).show();
@@ -310,7 +471,23 @@ public class ItemsManagerFragment extends Fragment {
     public void restoreClicked(int position) {
         Item item = adapter.getItem(position);
         item.setTrashDate(null);
-        adapter.notifyDataSetChanged();
+        adapter.refresh();
+        if (trashMode) {
+            saveAction();
+        }
+    }
+
+    public void joinClicked(int position) {
+        final Item item = adapter.getItem(position);
+        new AlertDialog.Builder(requireActivity())
+                .setTitle(R.string.join_item_title)
+                .setMessage(R.string.join_item_msg)
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .setPositiveButton(android.R.string.yes, (dialog, which) -> {
+                    refreshInvoked = true;
+                    userViewModel.joinItemToCurrentStore(item);
+                })
+                .setNegativeButton(android.R.string.no, null).show();
     }
 
     public void publishClicked(int position) {
@@ -324,7 +501,7 @@ public class ItemsManagerFragment extends Fragment {
                     .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int whichButton) {
                             item.setPublishDate(new Date());
-                            adapter.notifyDataSetChanged();
+                            adapter.refresh();
                         }
                     })
                     .setNegativeButton(android.R.string.no, null).show();
@@ -336,7 +513,7 @@ public class ItemsManagerFragment extends Fragment {
                     .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int whichButton) {
                             item.setPublishDate(null);
-                            adapter.notifyDataSetChanged();
+                            adapter.refresh();
                         }
                     })
                     .setNegativeButton(android.R.string.no, null).show();

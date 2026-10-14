@@ -11,6 +11,7 @@ import android.webkit.WebView;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -20,12 +21,15 @@ import androidx.lifecycle.Observer;
 import com.manech.manechapp.MainActivity;
 import com.manech.manechapp.R;
 import com.manech.manechapp.data.Item;
+import com.manech.manechapp.helper.HtmlDescription;
 import com.manech.manechapp.helper.MyUtils;
 import com.manech.manechapp.model.UserViewModel;
 import com.manech.manechapp.view.EditHtmlDialog;
 import com.manech.manechapp.view.images.ItemImagesFragment;
 import com.manech.manechapp.view.images.ResourceAdapter;
 import com.smarteist.autoimageslider.SliderView;
+import com.google.mlkit.vision.codescanner.GmsBarcodeScanner;
+import com.google.mlkit.vision.codescanner.GmsBarcodeScanning;
 
 import java.util.ArrayList;
 
@@ -53,6 +57,7 @@ public class ItemManagerFragment extends Fragment {
 
     private Item currentItem = null;
     private boolean refreshInvoked = false;
+    private boolean scanReturnPending = false;
 
     private String htmlDescription = "";
 
@@ -123,7 +128,7 @@ public class ItemManagerFragment extends Fragment {
             @Override
             public void onOkClick(String editedHtml) {
                 htmlDescription = editedHtml;
-                webViewDescription.loadDataWithBaseURL(null, editedHtml, "text/html", "UTF-8", null);
+                HtmlDescription.render(webViewDescription, editedHtml);
             }
         });
         dialog.show(getActivity().getSupportFragmentManager(), "edit_html_dialog");
@@ -159,6 +164,10 @@ public class ItemManagerFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
+        if (scanReturnPending) {
+            scanReturnPending = false;
+            return;
+        }
         refreshInvoked = false;
         refreshAction(true);
     }
@@ -193,6 +202,7 @@ public class ItemManagerFragment extends Fragment {
 
         txtTitle = view.findViewById(R.id.txtItemTitle);
         txtCode = view.findViewById(R.id.txtItemCode);
+        view.findViewById(R.id.button_scan_item_code).setOnClickListener(v -> scanItemCode());
         txtLocation = view.findViewById(R.id.txtLocation);
         txtQuantity = view.findViewById(R.id.txtQuantity);
         txtMinQty = view.findViewById(R.id.txtMinQty);
@@ -202,6 +212,33 @@ public class ItemManagerFragment extends Fragment {
         txtShippingFee = view.findViewById(R.id.txtShippingFee);
         webViewDescription = view.findViewById(R.id.txtDescription);
 
+    }
+
+    private void scanItemCode() {
+        GmsBarcodeScanner scanner = GmsBarcodeScanning.getClient(requireActivity());
+        scanReturnPending = true;
+        scanner.startScan()
+                .addOnSuccessListener(barcode -> {
+                    String code = barcode.getRawValue();
+                    if ((code == null || code.isEmpty()) && barcode.getDisplayValue() != null) {
+                        code = barcode.getDisplayValue();
+                    }
+                    if (code != null && !code.isEmpty() && txtCode != null) {
+                        txtCode.setText(code);
+                        txtCode.setSelection(code.length());
+                        if (currentItem != null) {
+                            currentItem.setCode(code);
+                        }
+                    } else if (isAdded()) {
+                        Toast.makeText(requireContext(), R.string.barcode_value_not_found, Toast.LENGTH_LONG).show();
+                    }
+                })
+                .addOnFailureListener(error -> {
+                    scanReturnPending = false;
+                    if (isAdded()) {
+                        Toast.makeText(requireContext(), R.string.barcode_scan_failed, Toast.LENGTH_LONG).show();
+                    }
+                });
     }
 
     @Override
@@ -269,7 +306,7 @@ public class ItemManagerFragment extends Fragment {
             txtShippingFee.setText("" + currentItem.getShipping());
             htmlDescription = currentItem.getDescription();
 
-            webViewDescription.loadDataWithBaseURL(null, htmlDescription, "text/html", "UTF-8", null);
+            HtmlDescription.render(webViewDescription, htmlDescription);
         }
     }
 }

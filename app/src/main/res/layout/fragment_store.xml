@@ -90,7 +90,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
                                 android:labelFor="@id/txtName"
-                                android:text="Store name"
+                                android:text="@string/store_name"
                                 android:textColor="@color/colorAccent" />
 
                             <TextView
@@ -98,7 +98,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
-                                android:text="Store status"
+                                android:text="@string/store_status"
                                 android:textColor="@color/colorPrimaryDark" />
 
                         </LinearLayout>
@@ -178,7 +178,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:labelFor="@id/tvStreetAddress"
-                            android:text="Street address"
+                            android:text="@string/street_address"
                             android:textColor="@color/colorAccent" />
 
                         <TextView
@@ -209,7 +209,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:labelFor="@id/tvZipCode"
-                                android:text="Zip code"
+                                android:text="@string/zip_code"
                                 android:textColor="@color/colorAccent" />
 
                             <TextView
@@ -233,7 +233,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:labelFor="@id/tvCity"
-                                android:text="City"
+                                android:text="@string/city"
                                 android:textColor="@color/colorAccent" />
 
                             <TextView
@@ -257,7 +257,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:labelFor="@id/tvPhones"
-                            android:text="Phone Numbers"
+                            android:text="@string/phone_numbers"
                             android:textColor="@color/colorAccent" />
 
                         <TextView
@@ -285,7 +285,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:labelFor="@id/tvCountry"
-                                android:text="Country"
+                                android:text="@string/country"
                                 android:textColor="@color/colorAccent" />
 
                             <TextView
@@ -308,7 +308,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:labelFor="@id/tvCoordinates"
-                                android:text="Latitude, Longitude"
+                                android:text="@string/latitude_longitude"
                                 android:textColor="@color/colorAccent" />
 
                             <TextView
@@ -353,7 +353,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="Select ... "
+                            android:text="@string/select_placeholder"
                             android:textColor="@color/colorPrimaryDark" />
 
                         <Button

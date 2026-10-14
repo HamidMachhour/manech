@@ -91,6 +91,9 @@ public interface OrderDAO {
     void upsertOrderLine(OrderLine orderLine);
 
 
+    @Query("update Item set quantity = max(0, coalesce(quantity, 0) + :delta) where id=:itemId")
+    void adjustItemStock(UUID itemId, double delta);
+
     @Insert(onConflict = REPLACE)
     void upsertOrderStatus(OrderStatus os);
 
@@ -99,4 +102,10 @@ public interface OrderDAO {
             " and id in(select distinct orderId from orderline where store=:storeId) " +
             " order by createAt desc ")
     List<Order> ordersByStore(UUID storeId);
+
+    @Query("select * from `Order` " +
+            " where deleteAt is null and trashAt is null " +
+            " and id in(select distinct orderId from orderline where store=(select storeId from User where id=:userId)) " +
+            " order by createAt desc ")
+    List<Order> ordersByUserStore(UUID userId);
 }

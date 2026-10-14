@@ -4,6 +4,8 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -12,7 +14,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.LinearLayout;
+import android.widget.ImageButton;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -32,6 +34,7 @@ import com.manech.manechapp.data.Cart;
 import com.manech.manechapp.data.CartItem;
 import com.manech.manechapp.data.Item;
 import com.manech.manechapp.data.ManechStore;
+import com.manech.manechapp.helper.FavoriteIds;
 import com.manech.manechapp.helper.SecureSharedPref;
 import com.manech.manechapp.model.CartViewModel;
 import com.manech.manechapp.model.ItemViewModel;
@@ -40,6 +43,9 @@ import com.manech.manechapp.view.cart.CartFragment;
 
 import java.util.List;
 import java.util.UUID;
+
+import com.google.mlkit.vision.codescanner.GmsBarcodeScanner;
+import com.google.mlkit.vision.codescanner.GmsBarcodeScanning;
 
 public class ItemsFragment extends Fragment implements View.OnClickListener {
 
@@ -51,6 +57,7 @@ public class ItemsFragment extends Fragment implements View.OnClickListener {
     private Button btnGoToCart;
     private SeekBar seekBar;
     private TextView tvQty;
+    private EditText searchInput;
 
     private ItemListAdapter adapter;
     private UUID storeId;
@@ -59,12 +66,20 @@ public class ItemsFragment extends Fragment implements View.OnClickListener {
     private ProgressDialog mDialog;
     private int viewMode = BUY_MODE;
     private SecureSharedPref sharedPref;
+    private Double minPrice;
+    private Double maxPrice;
+    private int sortMode;
+    private boolean favoritesFirst;
+    private boolean inStockOnly;
+    private List<Item> loadedItems = new java.util.ArrayList<>();
 
     private SeekBar.OnSeekBarChangeListener seekBarListener;
     private View.OnClickListener goToCartListener;
     public static final int BUY_MODE = 0;
     public static final int MANAGE_MODE = 1;
     public static final int TRASH_MODE = 2;
+    public static final int FAVORITES_MODE = 3;
+    public static final int PUBLIC_STORE_ITEMS_MODE = 4;
     private double currentPrice=0.0;
 
     @Override
@@ -77,6 +92,18 @@ public class ItemsFragment extends Fragment implements View.OnClickListener {
         owner = sharedPref.getUUID(getString(R.string.current_user_id), null);
 
         viewMode = sharedPref.getInt(getString(R.string.items_view_mode), -1);
+        if (getArguments() != null) {
+            viewMode = getArguments().getInt("view_mode", viewMode);
+            String publicStoreId = getArguments().getString("store_id");
+            if (publicStoreId != null) {
+                storeId = UUID.fromString(publicStoreId);
+            }
+        }
+        if (viewMode < BUY_MODE || viewMode > FAVORITES_MODE) {
+            if (viewMode != PUBLIC_STORE_ITEMS_MODE) {
+                viewMode = BUY_MODE;
+            }
+        }
 
         itemViewModel = ((MainActivity) getActivity()).getViewModel(ItemViewModel.class);
         storeViewModel = ((MainActivity) getActivity()).getViewModel(MStoreViewModel.class);
@@ -85,15 +112,29 @@ public class ItemsFragment extends Fragment implements View.OnClickListener {
         itemViewModel.getItems().observe(this, new Observer<List<Item>>() {
             @Override
             public void onChanged(List<Item> items) {
+                loadedItems = items == null ? new java.util.ArrayList<>() : new java.util.ArrayList<>(items);
+                List<Item> visibleItems = viewMode == FAVORITES_MODE
+                        ? FavoriteIds.filterItems(sharedPref, owner, loadedItems)
+                        : loadedItems;
 
                 //update recycleview
                 final boolean gridFormat = (adapter != null) ? adapter.isGridFormat() : false;
 
-                adapter = new ItemListAdapter(items, ItemsFragment.this, storeId);
+                UUID adapterStoreId = viewMode == PUBLIC_STORE_ITEMS_MODE ? null : storeId;
+                adapter = new ItemListAdapter(visibleItems, ItemsFragment.this, adapterStoreId);
                 adapter.setGridFormat(gridFormat);
                 adapter.setViewMode(viewMode);
-                itemsListView.setAdapter(adapter);
+                adapter.setFilterCriteria(minPrice, maxPrice, inStockOnly, sortMode, favoritesFirst);
+                if (itemsListView != null) {
+                    itemsListView.setAdapter(adapter);
+                }
+                if (searchInput != null) {
+                    adapter.getFilter().filter(searchInput.getText());
+                }
                 hideProgressDialog();
+                if (isAdded()) {
+                    ((MainActivity) requireActivity()).hideProgressBar();
+                }
             }
         });
 
@@ -102,11 +143,17 @@ public class ItemsFragment extends Fragment implements View.OnClickListener {
             public void onChanged(ManechStore manechStore) {
 
                 if (manechStore == null) {
-                    if (viewMode == BUY_MODE)
+                    if (viewMode == BUY_MODE || viewMode == FAVORITES_MODE)
                         itemViewModel.fetchPublicItems();
+                    else if (isAdded()) {
+                        ((MainActivity) requireActivity()).hideProgressBar();
+                    }
                     return;
                 }
                 switch (viewMode) {
+                    case PUBLIC_STORE_ITEMS_MODE:
+                        itemViewModel.fetchPublicItems(manechStore.getId());
+                        break;
                     case MANAGE_MODE:
                         itemViewModel.fetchActiveItems(manechStore.getId());
                         break;
@@ -120,24 +167,12 @@ public class ItemsFragment extends Fragment implements View.OnClickListener {
 
             }
         });
-        if (viewMode == BUY_MODE) {
+        if (isBuyingMode()) {
 
             cartViewModel.getCartMutableLiveData().observe(this, new Observer<Cart>() {
                 @Override
                 public void onChanged(Cart cart) {
-                    if (cart != null) {
-                        cartId=cart.getId();
-                        btnGoToCart.setText(cart.toString());
-                        final double price = cart.getPrice();
-                        if (price >0 && price !=currentPrice) {
-                            Toast.makeText(getContext(), getString(R.string.add_to_cart_confirm), Toast.LENGTH_SHORT).show();
-                            currentPrice= price;
-                        }
-
-                    } else {
-                        btnGoToCart.setText("0 Items ~ 0.00 DH");
-                        cartId=null;
-                    }
+                    updateCartSummary(cart);
                 }
             });
             cartViewModel.getBooleanMutableLiveData().observe(this, new Observer<Boolean>() {
@@ -186,26 +221,59 @@ public class ItemsFragment extends Fragment implements View.OnClickListener {
                              Bundle savedInstanceState) {
         setHasOptionsMenu(true);
 
-        getActivity().setTitle((viewMode == MANAGE_MODE) ? getString(R.string.items_fragment_title) : (viewMode == TRASH_MODE) ?
-                getString(R.string.manage_trash_items_title) :
-                getString(R.string.buy_items_fragment_title));
+        getActivity().setTitle(viewMode == MANAGE_MODE ? getString(R.string.items_fragment_title)
+                : viewMode == TRASH_MODE ? getString(R.string.manage_trash_items_title)
+                : viewMode == FAVORITES_MODE ? getString(R.string.favorite_items)
+                : viewMode == PUBLIC_STORE_ITEMS_MODE ? getString(R.string.public_store_items_title)
+                : getString(R.string.buy_items_fragment_title));
 
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_items, container, false);
 
 
-        ((LinearLayout)view.findViewById(R.id.buy_header_layout)).setVisibility((viewMode == BUY_MODE) ? View.VISIBLE : View.GONE);
+        boolean buyingMode = isBuyingMode();
+        view.findViewById(R.id.manage_header_cardview).setVisibility(buyingMode ? View.GONE : View.VISIBLE);
+        view.findViewById(R.id.buy_header_layout).setVisibility(buyingMode ? View.VISIBLE : View.GONE);
 
         btnGoToCart = view.findViewById(R.id.btnGoToCart);
 
-        btnGoToCart.setOnClickListener(goToCartListener);
+        if (goToCartListener != null) {
+            btnGoToCart.setOnClickListener(goToCartListener);
+        }
         seekBar = view.findViewById(R.id.seekBarQty);
-        seekBar.setOnSeekBarChangeListener(seekBarListener);
+        if (seekBarListener != null) {
+            seekBar.setOnSeekBarChangeListener(seekBarListener);
+        }
 
         tvQty = view.findViewById(R.id.tvQty);
+        searchInput = view.findViewById(R.id.edit_item_search);
+        searchInput.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (adapter != null) {
+                    adapter.getFilter().filter(s);
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+            }
+        });
+        setupFilterCard(view);
+        view.findViewById(R.id.button_scan_code).setOnClickListener(button -> scanBarcode());
 
         itemsListView = view.findViewById(R.id.items_list_view);
         itemsListView.setHasFixedSize(true);
+        if (itemsListView.getItemAnimator() instanceof androidx.recyclerview.widget.SimpleItemAnimator) {
+            ((androidx.recyclerview.widget.SimpleItemAnimator) itemsListView.getItemAnimator()).setSupportsChangeAnimations(false);
+        }
+        if (adapter != null) {
+            itemsListView.setAdapter(adapter);
+        }
 
         if (adapter != null && adapter.isGridFormat())
             itemsListView.setLayoutManager(new GridLayoutManager(view.getContext(), 2, GridLayoutManager.VERTICAL, false));
@@ -214,11 +282,16 @@ public class ItemsFragment extends Fragment implements View.OnClickListener {
 
         showProgressDialog();
 
-        storeId = sharedPref.getUUID(getString(R.string.defaultStore), null);
+        if (viewMode != PUBLIC_STORE_ITEMS_MODE) {
+            storeId = sharedPref.getUUID(getString(R.string.defaultStore), null);
+        }
         storeViewModel.fetchStore(storeId);
 
-        if (owner !=null && viewMode == BUY_MODE)
+        if (owner != null && buyingMode)
             cartViewModel.fetchCart(owner);
+        if (buyingMode) {
+            updateCartSummary(cartViewModel.getCartMutableLiveData().getValue());
+        }
         return view;
     }
 
@@ -329,7 +402,7 @@ public class ItemsFragment extends Fragment implements View.OnClickListener {
         }
 
         MenuItem searchMenuItem = menu.findItem(R.id.action_search);
-        final SearchView searchView = (SearchView) searchMenuItem.getActionView();
+        final SearchView searchView = searchMenuItem == null ? null : (SearchView) searchMenuItem.getActionView();
         if (searchView != null) {
             searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
                 @Override
@@ -339,7 +412,9 @@ public class ItemsFragment extends Fragment implements View.OnClickListener {
 
                 @Override
                 public boolean onQueryTextChange(String newText) {
-                    adapter.getFilter().filter(newText);
+                    if (adapter != null) {
+                        adapter.getFilter().filter(newText);
+                    }
                     return true;
                 }
             });
@@ -387,8 +462,8 @@ public class ItemsFragment extends Fragment implements View.OnClickListener {
     public void moveToTrashClicked(int p) {
         Item item = adapter.getItem(p);
         new AlertDialog.Builder(requireActivity())
-                .setTitle("Move to Trash")
-                .setMessage("Move this item to the Trash?")
+                .setTitle(R.string.move_to_trash_title)
+                .setMessage(R.string.move_item_to_trash_confirm)
                 .setIcon(android.R.drawable.ic_dialog_alert)
                 .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int whichButton) {
@@ -439,8 +514,138 @@ public class ItemsFragment extends Fragment implements View.OnClickListener {
     }
 
     public void addFavorite(int layoutPosition) {
-        //TODO
+        if (owner == null) {
+            Toast.makeText(requireContext(), R.string.login_required, Toast.LENGTH_LONG).show();
+            return;
+        }
+        Item item = adapter.getItem(layoutPosition);
+        boolean added = FavoriteIds.toggleItem(sharedPref, owner, item.getId());
+        Toast.makeText(getContext(), added ? R.string.favorite_added : R.string.favorite_removed, Toast.LENGTH_SHORT).show();
+        if (viewMode == FAVORITES_MODE) {
+            adapter.replaceItems(FavoriteIds.filterItems(sharedPref, owner, loadedItems));
+        } else {
+            adapter.notifyItemChanged(layoutPosition);
+        }
+    }
 
+    public boolean isFavorite(Item item) {
+        return FavoriteIds.isItemFavorite(sharedPref, owner, item.getId());
+    }
+
+    private void setupFilterCard(View view) {
+        final View content = view.findViewById(R.id.buy_filter_content);
+        final android.widget.ImageView arrow = view.findViewById(R.id.imgArrow2);
+        view.findViewById(R.id.buy_filter_header).setOnClickListener(v -> {
+            final boolean show = content.getVisibility() == View.GONE;
+            content.setVisibility(show ? View.VISIBLE : View.GONE);
+            arrow.setImageResource(show ? R.drawable.ic_arrow_up : R.drawable.ic_arrow_down);
+        });
+
+        final EditText minInput = view.findViewById(R.id.edit_min_price);
+        final EditText maxInput = view.findViewById(R.id.edit_max_price);
+        final android.widget.CheckBox inStock = view.findViewById(R.id.check_in_stock);
+        final android.widget.CheckBox favFirst = view.findViewById(R.id.check_favorites_first);
+        final android.widget.Spinner sort = view.findViewById(R.id.spinner_sort);
+        sort.setAdapter(android.widget.ArrayAdapter.createFromResource(requireContext(),
+                R.array.item_sort_options, android.R.layout.simple_spinner_dropdown_item));
+
+        minInput.setText(minPrice == null ? "" : String.valueOf(minPrice));
+        maxInput.setText(maxPrice == null ? "" : String.valueOf(maxPrice));
+        inStock.setChecked(inStockOnly);
+        favFirst.setChecked(favoritesFirst);
+        sort.setSelection(sortMode);
+
+        final Runnable apply = () -> {
+            minPrice = parsePrice(minInput.getText());
+            maxPrice = parsePrice(maxInput.getText());
+            inStockOnly = inStock.isChecked();
+            favoritesFirst = favFirst.isChecked();
+            sortMode = sort.getSelectedItemPosition();
+            if (adapter != null) {
+                adapter.setFilterCriteria(minPrice, maxPrice, inStockOnly, sortMode, favoritesFirst);
+            }
+        };
+        final TextWatcher watcher = new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                apply.run();
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+            }
+        };
+        minInput.addTextChangedListener(watcher);
+        maxInput.addTextChangedListener(watcher);
+        inStock.setOnCheckedChangeListener((b, checked) -> apply.run());
+        favFirst.setOnCheckedChangeListener((b, checked) -> apply.run());
+        sort.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(android.widget.AdapterView<?> parent, View v, int position, long id) {
+                apply.run();
+            }
+
+            @Override
+            public void onNothingSelected(android.widget.AdapterView<?> parent) {
+            }
+        });
+        view.findViewById(R.id.button_reset_filters).setOnClickListener(v -> {
+            minInput.setText("");
+            maxInput.setText("");
+            inStock.setChecked(false);
+            favFirst.setChecked(false);
+            sort.setSelection(0);
+            searchInput.setText("");
+        });
+    }
+
+    private static Double parsePrice(CharSequence text) {
+        try {
+            return text == null || text.length() == 0 ? null : Double.valueOf(text.toString());
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    private void scanBarcode() {
+        GmsBarcodeScanner scanner = GmsBarcodeScanning.getClient(requireActivity());
+        scanner.startScan()
+                .addOnSuccessListener(barcode -> {
+                    String code = barcode.getRawValue();
+                    if (code != null && searchInput != null) {
+                        searchInput.setText(code);
+                    }
+
+                })
+                .addOnFailureListener(exception ->
+                        Toast.makeText(requireContext(), R.string.barcode_scan_failed, Toast.LENGTH_LONG).show());
+    }
+
+    private boolean isBuyingMode() {
+        return viewMode == BUY_MODE || viewMode == FAVORITES_MODE || viewMode == PUBLIC_STORE_ITEMS_MODE;
+    }
+
+    private void updateCartSummary(Cart cart) {
+        if (cart != null) {
+            cartId = cart.getId();
+            if (btnGoToCart != null) {
+                btnGoToCart.setText(cart.toString());
+            }
+            double price = cart.getPrice();
+            if (price > 0.0 && price != currentPrice && isAdded()) {
+                Toast.makeText(requireContext(), R.string.add_to_cart_confirm, Toast.LENGTH_SHORT).show();
+                currentPrice = price;
+            }
+        } else {
+            cartId = null;
+            if (btnGoToCart != null) {
+                btnGoToCart.setText(R.string._0_00_dh);
+            }
+        }
     }
 
     public void addCart(int layoutPosition) {

@@ -27,37 +27,102 @@ public class ItemsManagerAdapter extends RecyclerView.Adapter<ItemManagerViewHol
     private boolean gridFormat = false;
     private List<Item> allItems;
 
-    private Filter itemsFilter = new Filter() {
+    private String query = "";
+    private Double minPrice;
+    private Double maxPrice;
+    private boolean inStockOnly;
+    private int sortMode;
+
+    private final Filter itemsFilter = new Filter() {
         @Override
         protected FilterResults performFiltering(CharSequence constraint) {
-            List<Item> filteredList = new ArrayList<>();
-            if (constraint == null || constraint.length() == 0) {
-                filteredList.addAll(allItems);
-            } else {
-                String filterPattern = constraint.toString().toLowerCase().trim();
-                for (Item item : allItems) {
-                    String text = item.toString();
-                    if (text.toLowerCase().trim().contains(filterPattern)) {
-                        filteredList.add(item);
-                    }
-                }
-            }
+            query = constraint == null ? "" : constraint.toString();
             FilterResults results = new FilterResults();
-            results.values = filteredList;
+            results.values = compute();
             return results;
         }
 
         @Override
         protected void publishResults(CharSequence constraint, FilterResults results) {
             itemsList.clear();
-            itemsList.addAll((List) results.values);
+            itemsList.addAll((List<Item>) results.values);
             notifyDataSetChanged();
         }
     };
 
-    public ItemsManagerAdapter(List<Item> itemsList, ItemsManagerFragment listener) {
-        this.itemsList = itemsList;
-        this.allItems = new ArrayList<>(itemsList);
+    private List<Item> compute() {
+        List<Item> result = new ArrayList<>();
+        String pattern = query.toLowerCase().trim();
+        for (Item item : allItems) {
+            String text = (item.getTitle() == null ? "" : item.getTitle()) + " "
+                    + (item.getCode() == null ? "" : item.getCode()) + " "
+                    + (item.getDescription() == null ? "" : item.getDescription());
+            double price = item.getPrice() == null ? 0.0 : item.getPrice();
+            double quantity = item.getQuantity() == null ? 0.0 : item.getQuantity();
+            if ((!pattern.isEmpty() && !text.toLowerCase().contains(pattern))
+                    || (minPrice != null && price < minPrice)
+                    || (maxPrice != null && price > maxPrice)
+                    || (inStockOnly && quantity <= 0.0)) {
+                continue;
+            }
+            result.add(item);
+        }
+        java.util.Comparator<Item> comparator = null;
+        switch (sortMode) {
+            case 1:
+                comparator = (a, b) -> Double.compare(priceOf(a), priceOf(b));
+                break;
+            case 2:
+                comparator = (a, b) -> Double.compare(priceOf(b), priceOf(a));
+                break;
+            case 3:
+                comparator = (a, b) -> titleOf(a).compareToIgnoreCase(titleOf(b));
+                break;
+            case 4:
+                comparator = (a, b) -> titleOf(b).compareToIgnoreCase(titleOf(a));
+                break;
+            case 5:
+                comparator = (a, b) -> Double.compare(stockOf(b), stockOf(a));
+                break;
+            default:
+                break;
+        }
+        if (comparator != null) {
+            java.util.Collections.sort(result, comparator);
+        }
+        return result;
+    }
+
+    private static double priceOf(Item item) {
+        return item.getPrice() == null ? 0.0 : item.getPrice();
+    }
+
+    private static double stockOf(Item item) {
+        return item.getQuantity() == null ? 0.0 : item.getQuantity();
+    }
+
+    private static String titleOf(Item item) {
+        return item.getTitle() == null ? "" : item.getTitle();
+    }
+
+    public void setFilterCriteria(Double minPrice, Double maxPrice, boolean inStockOnly, int sortMode) {
+        this.minPrice = minPrice;
+        this.maxPrice = maxPrice;
+        this.inStockOnly = inStockOnly;
+        this.sortMode = sortMode;
+        refresh();
+    }
+
+    // re-applies the criteria on the full list, then redraws
+    public void refresh() {
+        itemsList.clear();
+        itemsList.addAll(compute());
+        notifyDataSetChanged();
+    }
+
+    public ItemsManagerAdapter(List<Item> items, ItemsManagerFragment listener) {
+        this.allItems = items;
+        this.itemsList = new ArrayList<>(items);
         this.listListener = listener;
     }
 
@@ -107,6 +172,11 @@ public class ItemsManagerAdapter extends RecyclerView.Adapter<ItemManagerViewHol
             }
 
             @Override
+            public void joinClicked(int position) {
+                listListener.joinClicked(position);
+            }
+
+            @Override
             public void addFavorite(int layoutPosition) {
 
             }
@@ -142,13 +212,14 @@ public class ItemsManagerAdapter extends RecyclerView.Adapter<ItemManagerViewHol
         loadDefaultImage(item,holder);
 
         holder.getImgHighlight().setVisibility(View.VISIBLE);
+        holder.getImgJoin().setVisibility(item.getStore() == null ? View.VISIBLE : View.GONE);
 
         holder.getTrashActionsLayout().setVisibility((item.getTrashDate() != null) ? View.VISIBLE : View.GONE);
         holder.getActiveActionsLayout().setVisibility((item.getTrashDate() != null) ? View.GONE : View.VISIBLE);
 
         if (item.getPublishDate() != null) {
             holder.getImgPublish().setColorFilter(ContextCompat.getColor(holder.getImgPublish().getContext(), R.color.colorPrimaryDark));
-            holder.getTvState().setText("Published");
+            holder.getTvState().setText(R.string.published_state);
         }else{
             holder.getImgPublish().setColorFilter(ContextCompat.getColor(holder.getImgPublish().getContext(), R.color.colorAccent));
             holder.getTvState().setText("");
@@ -156,7 +227,7 @@ public class ItemsManagerAdapter extends RecyclerView.Adapter<ItemManagerViewHol
 
         if (item.getTrashDate() != null) {
             holder.getImgTrash().setColorFilter(ContextCompat.getColor(holder.getImgTrash().getContext(), R.color.colorPrimaryDark));
-            holder.getTvState().setText("In Trash");
+            holder.getTvState().setText(R.string.in_trash_state);
         }else {
             holder.getImgTrash().setColorFilter(ContextCompat.getColor(holder.getImgTrash().getContext(), R.color.colorAccent));
             holder.getTvState().setText("");
@@ -166,9 +237,7 @@ public class ItemsManagerAdapter extends RecyclerView.Adapter<ItemManagerViewHol
     private void loadDefaultImage(Item item,  ItemManagerViewHolder holder) {
         final ImageView imageView = holder.getImgItem();
         final ItemImage itemImage = item.getImage();
-        if(itemImage!=null){
-            MyUtils.loadResourceImage(itemImage,imageView);
-        }
+        MyUtils.loadResourceImage(itemImage, imageView);
     }
 
     @Override
@@ -176,8 +245,9 @@ public class ItemsManagerAdapter extends RecyclerView.Adapter<ItemManagerViewHol
         return itemsList.size();
     }
 
+    // full list, including the items hidden by the current criteria
     public List<Item> getItemsList() {
-        return itemsList;
+        return allItems;
     }
 
     @Override

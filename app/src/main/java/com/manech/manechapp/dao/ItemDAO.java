@@ -40,6 +40,12 @@ public interface ItemDAO {
     @Query("Select * from Item where store=:storeId and trashDate is null")
     List<Item> activeItems(UUID storeId);
 
+    @Query("Select * from Item where store is null and trashDate is null")
+    List<Item> orphanItems();
+
+    @Query("update Item set store=:storeId where id=:itemId")
+    void joinStore(UUID itemId, UUID storeId);
+
     @Query("update Item set trashDate=CURRENT_TIMESTAMP where id=:itemId")
     void moveToTrash(UUID itemId);
 
@@ -62,7 +68,7 @@ public interface ItemDAO {
     @Query("delete from item WHERE store= :storeId and trashDate is not null ")
     int clearTrash(UUID storeId);
 
-    @Query("Select * from Item where publishDate is not null and store =:storeId ")
+    @Query("Select * from Item where publishDate is not null and trashDate is null and store =:storeId ")
     List<Item> publicItems(UUID storeId);
 
 }

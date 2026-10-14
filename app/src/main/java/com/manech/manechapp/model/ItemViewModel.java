@@ -125,6 +125,12 @@ public class ItemViewModel extends ViewModel {
         );
     }
 
+    public void fetchPublicItems(UUID storeId) {
+        executor.execute(() -> {
+            this.items.postValue(repository.publicItems(storeId));
+        });
+    }
+
     public void fetchPublicAndPrivateItems(UUID storeId) {
         executor.execute(() -> {
                     this.items.postValue(repository.publicAndPrivateItems(storeId));

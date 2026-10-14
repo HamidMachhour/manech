@@ -11,6 +11,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.ImageView;
+import android.widget.Toast;
+import android.webkit.WebView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -22,15 +25,24 @@ import com.manech.manechapp.MainActivity;
 import com.manech.manechapp.R;
 import com.manech.manechapp.data.Item;
 import com.manech.manechapp.helper.MyUtils;
+import com.manech.manechapp.helper.HtmlDescription;
 import com.manech.manechapp.helper.SecureSharedPref;
 import com.manech.manechapp.model.Injection;
 import com.manech.manechapp.model.ItemViewModel;
 
+import com.manech.manechapp.view.images.ResourceAdapter;
+import com.manech.manechapp.view.EditHtmlDialog;
+import com.smarteist.autoimageslider.SliderView;
+import com.google.mlkit.vision.codescanner.GmsBarcodeScanner;
+import com.google.mlkit.vision.codescanner.GmsBarcodeScanning;
+
+import java.util.ArrayList;
 import java.util.UUID;
 
 public class ItemFragment extends Fragment implements Observer<Item>, View.OnClickListener {
 
-    private ImageView imageView;
+    private SliderView imagesSliderView;
+    private ResourceAdapter adapter;
 
     private EditText txtTitle;
     private EditText txtCode;
@@ -42,7 +54,9 @@ public class ItemFragment extends Fragment implements Observer<Item>, View.OnCli
     private EditText txtBasePrice;
     private EditText txtShippingFee;
 
-    private EditText txtDescription;
+    private WebView txtDescription;
+    private ImageView imgEditDescription;
+    private String htmlDescription = "";
     private ProgressDialog mDialog;
     private ItemViewModel itemViewModel;
     private UUID itemId;
@@ -77,12 +91,16 @@ public class ItemFragment extends Fragment implements Observer<Item>, View.OnCli
 
     private void initForm(View view) {
 
-        imageView =view.findViewById(R.id.imgItem);
-
-        imageView.setOnClickListener(this);
+        imagesSliderView = view.findViewById(R.id.imagesSliderView);
+        adapter = new ResourceAdapter(null, new ArrayList<>());
+        imagesSliderView.setSliderAdapter(adapter);
 
         txtTitle = view.findViewById(R.id.txtItemTitle);
         txtCode = view.findViewById(R.id.txtItemCode);
+        if (editMode == ItemsFragment.MANAGE_MODE) {
+            ImageView scanCodeButton = view.findViewById(R.id.button_scan_item_code);
+            scanCodeButton.setOnClickListener(v -> scanItemCode());
+        }
         txtLocation = view.findViewById(R.id.txtLocation);
         txtQuantity = view.findViewById(R.id.txtQuantity);
         txtMinQty = view.findViewById(R.id.txtMinQty);
@@ -90,7 +108,29 @@ public class ItemFragment extends Fragment implements Observer<Item>, View.OnCli
         txtPrice = view.findViewById(R.id.txtPrice);
         txtBasePrice = view.findViewById(R.id.txtBasePrice);
         txtShippingFee = view.findViewById(R.id.txtShippingFee);
-        txtDescription = view.findViewById(R.id.txtItemDescription);
+        txtDescription = view.findViewById(editMode == ItemsFragment.MANAGE_MODE
+                ? R.id.txtDescription : R.id.txtItemDescription);
+        imgEditDescription = view.findViewById(R.id.imgEditDescription);
+        if (imgEditDescription != null) {
+            imgEditDescription.setOnClickListener(v -> editDescription());
+        }
+    }
+
+    private void scanItemCode() {
+        GmsBarcodeScanner scanner = GmsBarcodeScanning.getClient(requireActivity());
+        scanner.startScan()
+                .addOnSuccessListener(barcode -> {
+                    String code = barcode.getRawValue();
+                    if (code != null && txtCode != null) {
+                        txtCode.setText(code);
+                        txtCode.setSelection(code.length());
+                    }
+                })
+                .addOnFailureListener(error -> {
+                    if (isAdded()) {
+                        Toast.makeText(requireContext(), R.string.barcode_scan_failed, Toast.LENGTH_LONG).show();
+                    }
+                });
     }
 
     @Override
@@ -133,7 +173,7 @@ public class ItemFragment extends Fragment implements Observer<Item>, View.OnCli
             currentItem.setBasePrice( MyUtils.parseDouble(txtBasePrice.getText().toString()));
             currentItem.setShipping( MyUtils.parseDouble(txtShippingFee.getText().toString()));
 
-            currentItem.setDescription(txtDescription.getText().toString());
+            currentItem.setDescription(htmlDescription);
             //todo store pics and default pic
         }
 
@@ -145,6 +185,13 @@ public class ItemFragment extends Fragment implements Observer<Item>, View.OnCli
         hideProgressDialog();
     }
 
+    private void editDescription() {
+        EditHtmlDialog dialog = EditHtmlDialog.newInstance(htmlDescription, editedHtml -> {
+            htmlDescription = editedHtml;
+            HtmlDescription.render(txtDescription, htmlDescription);
+        });
+        dialog.show(requireActivity().getSupportFragmentManager(), "edit_html_dialog");
+    }
 
     private void showProgressDialog() {
         mDialog = new ProgressDialog(getContext());
@@ -184,11 +231,16 @@ public class ItemFragment extends Fragment implements Observer<Item>, View.OnCli
             txtPrice.setText("" + currentItem.getPrice());
             txtBasePrice.setText("" + currentItem.getBasePrice());
             txtShippingFee.setText("" + currentItem.getShipping());
-            txtDescription.setText(currentItem.getDescription());
+            htmlDescription = currentItem.getDescription();
+            HtmlDescription.render(txtDescription, htmlDescription);
 
-            if(currentItem.getImage()!=null){
-                MyUtils.loadResourceImage(currentItem.getImage(),imageView);
+            adapter.getResourceList().clear();
+            if (currentItem.getImages() != null) {
+                adapter.getResourceList().addAll(currentItem.getImages());
+            } else if (currentItem.getImage() != null) {
+                adapter.getResourceList().add(currentItem.getImage());
             }
+            adapter.notifyDataSetChanged();
         }
     }
 

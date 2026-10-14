@@ -135,7 +135,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_marginEnd="8dp"
-                                android:text="Local"
+                                android:text="@string/local"
                                 android:textColor="@color/colorAccent" />
 
                             <RadioButton
@@ -143,7 +143,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_marginEnd="4dp"
-                                android:text="Online"
+                                android:text="@string/online"
                                 android:textColor="@color/colorAccent" />
 
                         </RadioGroup>
@@ -189,7 +189,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Stores:"
+                                android:text="@string/stores_label"
                                 android:textColor="@color/colorAccent" />
 
                             <TextView
@@ -200,7 +200,7 @@
                                 android:layout_weight="2"
                                 android:background="@drawable/border2"
                                 android:padding="2dp"
-                                android:text="Selected stores names"
+                                android:text="@string/selected_store_names"
                                 android:textColor="@color/colorPrimaryDark" />
                         </TableRow>
 
@@ -213,7 +213,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Categories:"
+                                android:text="@string/categories_label"
                                 android:textColor="@color/colorAccent" />
 
                             <TextView
@@ -224,7 +224,7 @@
                                 android:layout_weight="2"
                                 android:background="@drawable/border2"
                                 android:padding="2dp"
-                                android:text="Selected categories names"
+                                android:text="@string/selected_category_names"
                                 android:textColor="@color/colorPrimaryDark" />
                         </TableRow>
 
@@ -253,6 +253,5 @@
     </androidx.core.widget.NestedScrollView>
 
 </LinearLayout>
-
 
 

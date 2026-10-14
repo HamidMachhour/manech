@@ -5,7 +5,9 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
+import android.webkit.WebView;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.DialogFragment;
@@ -44,10 +46,22 @@ public class EditHtmlDialog extends DialogFragment {
 
         EditText editText = view.findViewById(R.id.edit_text);
         editText.setText(html);
+        WebView preview = view.findViewById(R.id.html_preview);
+        Button togglePreview = view.findViewById(R.id.toggle_html_preview);
+        togglePreview.setOnClickListener(v -> {
+            boolean showPreview = preview.getVisibility() != View.VISIBLE;
+            if (showPreview) {
+                com.manech.manechapp.helper.HtmlDescription.render(
+                        preview, editText.getText().toString());
+            }
+            preview.setVisibility(showPreview ? View.VISIBLE : View.GONE);
+            editText.setVisibility(showPreview ? View.GONE : View.VISIBLE);
+            togglePreview.setText(showPreview ? R.string.html_edit_source : R.string.html_preview);
+        });
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setView(view)
-                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         String editedHtml = editText.getText().toString();
@@ -56,7 +70,7 @@ public class EditHtmlDialog extends DialogFragment {
                         }
                     }
                 })
-                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         // Do nothing

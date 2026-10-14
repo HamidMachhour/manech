@@ -1,6 +1,9 @@
 package com.manech.manechapp.view.order;
 
 import android.app.ProgressDialog;
+import android.content.Context;
+import android.print.PrintAttributes;
+import android.print.PrintManager;
 import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.os.Bundle;
@@ -11,6 +14,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -31,6 +36,7 @@ import com.manech.manechapp.data.Address;
 import com.manech.manechapp.data.Order;
 import com.manech.manechapp.data.OrderLine;
 import com.manech.manechapp.data.DeliveryMethod;
+import com.manech.manechapp.data.OrderStatus;
 import com.manech.manechapp.helper.Converters;
 import com.manech.manechapp.helper.MyUtils;
 import com.manech.manechapp.helper.SecureSharedPref;
@@ -41,6 +47,8 @@ import com.manech.manechapp.view.item.ItemFragment;
 import com.manech.manechapp.view.item.ItemsFragment;
 
 import net.glxn.qrgen.android.QRCode;
+
+import java.util.List;
 
 public class OrderFragment extends Fragment implements  OrderLineClickListener{
 
@@ -79,6 +87,7 @@ public class OrderFragment extends Fragment implements  OrderLineClickListener{
     private ProgressDialog mDialog;
 
     private Order currentOrder;
+    private ImageView imgCancelOrder;
 
 
     @Override
@@ -133,7 +142,14 @@ public class OrderFragment extends Fragment implements  OrderLineClickListener{
 
                     tvTotalPrice.setText(order.getPrice() + "");
 
-                    tvCurrentState.setText(order.getOrderStatusList().get(0).getStatus().name());
+                    List<OrderStatus> statuses = order.getOrderStatusList();
+                    tvCurrentState.setText(statuses == null || statuses.isEmpty()
+                            ? getString(R.string.status_unknown)
+                            : statuses.get(0).getStatus().getLocalizedName(requireContext()));
+
+                    imgCancelOrder.setVisibility(statuses != null && !statuses.isEmpty()
+                            && statuses.get(0).getStatus() == com.manech.manechapp.data.Status.PENDING
+                            ? View.VISIBLE : View.GONE);
 
                     orderLineListAdapter = new OrderLineListAdapter(order.getOrderLineList(), OrderFragment.this);
                     orderLinesRecyclerView.setAdapter(orderLineListAdapter);
@@ -183,6 +199,9 @@ public class OrderFragment extends Fragment implements  OrderLineClickListener{
                     /*case R.id.imgHighlight:
                         //highlightLocations();
                         break;*/
+                    case R.id.imgCancelOrder:
+                        confirmCancelOrder();
+                        break;
                     case R.id.imgArrow1:
                         collapseCardView(imgArrow1, orderGeneralView);
                         break;
@@ -197,6 +216,16 @@ public class OrderFragment extends Fragment implements  OrderLineClickListener{
         };
     }
 
+
+    private void confirmCancelOrder() {
+        if (currentOrder == null) return;
+        new androidx.appcompat.app.AlertDialog.Builder(getContext())
+                .setMessage(R.string.confirm_cancel_order)
+                .setPositiveButton(android.R.string.ok, (d, w) ->
+                        orderViewModel.changeOrderStatus(currentOrder.getId(), com.manech.manechapp.data.Status.CANCELLED))
+                .setNegativeButton(android.R.string.cancel, null)
+                .show();
+    }
 
     private void collapseCardView(ImageView img, ViewGroup viewGroup) {
         viewGroup.setVisibility(viewGroup.getVisibility() == View.GONE ? View.VISIBLE : View.GONE);
@@ -236,6 +265,8 @@ public class OrderFragment extends Fragment implements  OrderLineClickListener{
         imgArrow2 = view.findViewById(R.id.imgArrow2);
         imgArrow3 = view.findViewById(R.id.imgArrow3);
 
+        imgCancelOrder = view.findViewById(R.id.imgCancelOrder);
+        imgCancelOrder.setOnClickListener(onClickListener);
         imgArrow1.setOnClickListener(onClickListener);
         imgArrow2.setOnClickListener(onClickListener);
         imgArrow3.setOnClickListener(onClickListener);
@@ -287,6 +318,9 @@ public class OrderFragment extends Fragment implements  OrderLineClickListener{
             case R.id.action_showQRCode:
                 showQRCode();
                 return true;
+            case R.id.action_print_receipt:
+                printReceipt();
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -294,11 +328,12 @@ public class OrderFragment extends Fragment implements  OrderLineClickListener{
 
     private void showQRCode() {
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-        builder.setPositiveButton("Print", new DialogInterface.OnClickListener() {
+        builder.setPositiveButton(R.string.print_receipt, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
+                printReceipt();
             }
-        }).setNegativeButton("No thanks", new DialogInterface.OnClickListener() {
+        }).setNegativeButton(R.string.no_thanks, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
             }
@@ -318,6 +353,63 @@ public class OrderFragment extends Fragment implements  OrderLineClickListener{
         });
 
         dialog.show();
+    }
+
+    private void printReceipt() {
+        if (currentOrder == null) {
+            Toast.makeText(requireContext(), R.string.receipt_unavailable, Toast.LENGTH_LONG).show();
+            return;
+        }
+        StringBuilder html = new StringBuilder("<html><head><meta charset=\"utf-8\"><style>")
+                .append("body{font-family:sans-serif;padding:20px}table{width:100%;border-collapse:collapse}")
+                .append("th,td{border-bottom:1px solid #bbb;padding:8px;text-align:left}")
+                .append(".total{text-align:right;font-size:18px;font-weight:bold}</style></head><body>")
+                .append("<h1>").append(getString(R.string.order_receipt)).append("</h1>")
+                .append("<p>").append(getString(R.string.order_id)).append(": ")
+                .append(android.text.Html.escapeHtml(currentOrder.getQrCode())).append("<br>")
+                .append(getString(R.string.date)).append(": ")
+                .append(android.text.Html.escapeHtml(Converters.fromDate(currentOrder.getCreateAt()))).append("</p>");
+        if (currentOrder.getDeliveryMethod() != null) {
+            html.append("<p>").append(getString(R.string.delivery_method)).append(": ")
+                    .append(android.text.Html.escapeHtml(currentOrder.getDeliveryMethod().getName())).append("</p>");
+        }
+        if (currentOrder.getDeliveryAddress() != null) {
+            html.append("<p>").append(getString(R.string.select_delivery_address)).append(": ")
+                    .append(android.text.Html.escapeHtml(currentOrder.getDeliveryAddress().toString())).append("</p>");
+        }
+        if (currentOrder.getBillingAddress() != null) {
+            html.append("<p>").append(getString(R.string.select_billing_address)).append(": ")
+                    .append(android.text.Html.escapeHtml(currentOrder.getBillingAddress().toString())).append("</p>");
+        }
+        html.append("<p>").append(getString(R.string.column_fee)).append(": ")
+                .append(currentOrder.getFee()).append(" DH<br>")
+                .append(getString(R.string.column_discount)).append(": ")
+                .append(currentOrder.getDiscount()).append("%</p>")
+                .append("<table><tr><th>").append(getString(R.string.column_item)).append("</th><th>")
+                .append(getString(R.string.column_quantity)).append("</th><th>")
+                .append(getString(R.string.column_total)).append("</th></tr>");
+        if (currentOrder.getOrderLineList() != null) {
+            for (OrderLine line : currentOrder.getOrderLineList()) {
+                html.append("<tr><td>").append(android.text.Html.escapeHtml(line.getTitle()))
+                        .append("</td><td>").append(line.getQuantity()).append("</td><td>")
+                        .append(line.getPrice()).append(" DH</td></tr>");
+            }
+        }
+        html.append("</table><p class=\"total\">")
+                .append(getString(R.string.total)).append(": ")
+                .append(currentOrder.getPrice()).append(" DH</p></body></html>");
+
+        PrintManager printManager = (PrintManager) requireContext().getSystemService(Context.PRINT_SERVICE);
+        WebView printWebView = new WebView(requireContext());
+        printWebView.setWebViewClient(new WebViewClient() {
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                String jobName = getString(R.string.order_receipt) + " " + currentOrder.getQrCode();
+                printManager.print(jobName, view.createPrintDocumentAdapter(jobName),
+                        new PrintAttributes.Builder().setMediaSize(PrintAttributes.MediaSize.ISO_A4).build());
+            }
+        });
+        printWebView.loadDataWithBaseURL(null, html.toString(), "text/html", "UTF-8", null);
     }
 
 

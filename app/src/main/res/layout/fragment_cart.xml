@@ -49,7 +49,7 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:background="@drawable/border"
-            android:text="@string/column_order"
+            android:text="@string/place_order"
             android:textColor="@color/colorAccent" />
     </TableRow>
 
@@ -155,6 +155,5 @@
     </androidx.core.widget.NestedScrollView>
 
 </LinearLayout>
-
 
 

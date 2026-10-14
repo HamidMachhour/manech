@@ -78,6 +78,7 @@ public class CartRepository {
                     orderDAO.upsertOrderStatus(new OrderStatus(order.getId(), Status.PENDING, order.getCreateAt()));
                 }
                 insertOrderLine(order,item, cartItem.getQuantity(),cartItem.getDiscount());
+                cartDAO.adjustItemStock(item.getId(), -cartItem.getQuantity());
             }
         }
         cartDAO.clearCart(cart.getId());

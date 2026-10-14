@@ -46,9 +46,11 @@ public class LoginFragment extends Fragment {
                     btnLoginClicked = false;
                     if(user!=null) {
                         sharedPref.putUUID(getString(R.string.current_user_id), user.getId());
-                    }else{
-                        Toast.makeText(getContext(), getString(R.string.wrong_password_email), Toast.LENGTH_LONG).show();
+                        ((MainActivity)getActivity()).hideProgressBar();
+                        ((MainActivity)getActivity()).showDashboardFragment();
+                        return;
                     }
+                    Toast.makeText(getContext(), getString(R.string.wrong_password_email), Toast.LENGTH_LONG).show();
                     ((MainActivity)getActivity()).hideProgressBar();
                 }
             }
@@ -71,6 +73,8 @@ public class LoginFragment extends Fragment {
         txtPassword = view.findViewById(R.id.txtPassword);
         tvRegisterLink = view.findViewById(R.id.btnNewAccount);
         btnLogin = view.findViewById(R.id.btnLogin);
+        view.findViewById(R.id.btnLanguage).setOnClickListener(v ->
+                ((MainActivity) getActivity()).showLanguageChooser());
         btnLogin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

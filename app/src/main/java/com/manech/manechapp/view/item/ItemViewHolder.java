@@ -142,6 +142,10 @@ public class ItemViewHolder extends RecyclerView.ViewHolder implements View.OnCl
         return imgAdd2Cart;
     }
 
+    public ImageView getImgFavorite() {
+        return imgFavorite;
+    }
+
     @Override
     public void onClick(View v) {
         switch (v.getId()) {

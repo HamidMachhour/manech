@@ -24,5 +24,9 @@
         android:icon="@drawable/ic_qr_code"
         android:title="@string/show_qrcode"
         app:showAsAction="ifRoom"></item>
+    <item
+        android:id="@+id/action_print_receipt"
+        android:title="@string/print_receipt"
+        app:showAsAction="never" />
 
 </menu>

@@ -8,6 +8,12 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
+        <Button
+            android:id="@+id/toggle_html_preview"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/html_preview" />
+
         <EditText
             android:id="@+id/edit_text"
             android:layout_width="match_parent"
@@ -15,6 +21,12 @@
             android:gravity="top|start"
             android:minLines="8"
             android:padding="8dp" />
+
+        <WebView
+            android:id="@+id/html_preview"
+            android:layout_width="match_parent"
+            android:layout_height="240dp"
+            android:visibility="gone" />
     </LinearLayout>
 
 </androidx.core.widget.NestedScrollView>

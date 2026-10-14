@@ -45,7 +45,7 @@ public class ViewModelFactory implements ViewModelProvider.Factory {
             if (itemViewModel == null) {
                 itemViewModel = new ItemViewModel();
                 itemViewModel.setExecutor(executor);
-                itemViewModel.setRepository(ItemRepository.getInstance(manechDatabase.itemDAO()));
+                itemViewModel.setRepository(ItemRepository.getInstance(manechDatabase.itemDAO(), manechDatabase.resourceDAO()));
             }
             return (T) itemViewModel;
         }
@@ -56,6 +56,7 @@ public class ViewModelFactory implements ViewModelProvider.Factory {
                 mStoreViewModel.setExecutor(executor);
                 mStoreViewModel.setRepository(ManechStoreRepository.getInstance(manechDatabase.manechStoreDAO(),
                         manechDatabase.addressDAO(), manechDatabase.resourceDAO()));
+                mStoreViewModel.setItemRepository(ItemRepository.getInstance(manechDatabase.itemDAO(), manechDatabase.resourceDAO()));
             }
             return (T) mStoreViewModel;
         }
@@ -71,7 +72,7 @@ public class ViewModelFactory implements ViewModelProvider.Factory {
                 userViewModel.setAddressRepository(AddressRepository.getInstance(manechDatabase.addressDAO()));
                 userViewModel.setCartRepository(CartRepository.getInstance(manechDatabase.cartDAO(),manechDatabase.orderDAO()));
                 userViewModel.setOrderRepository(OrderRepository.getInstance(manechDatabase.orderDAO(),manechDatabase.cartDAO()));
-                userViewModel.setItemRepository(ItemRepository.getInstance(manechDatabase.itemDAO()));
+                userViewModel.setItemRepository(ItemRepository.getInstance(manechDatabase.itemDAO(), manechDatabase.resourceDAO()));
             }
             return (T) userViewModel;
         }

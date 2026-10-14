@@ -42,6 +42,8 @@ public class RegisterFragment extends Fragment {
         txtEmail = view.findViewById(R.id.txtEmail);
         btnRegister = view.findViewById(R.id.btnRegister);
         btnLogin =view.findViewById(R.id.btnLogin);
+        view.findViewById(R.id.btnLanguage).setOnClickListener(v ->
+                ((MainActivity) getActivity()).showLanguageChooser());
 
         btnRegisterClicked =false;
 

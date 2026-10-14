@@ -92,7 +92,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginRight="4dp"
                             android:gravity="right"
-                            android:text="Delivery Method"
+                            android:text="@string/delivery_method_label"
                             android:textColor="@color/colorAccent" />
 
                         <TextView
@@ -105,7 +105,7 @@
                             android:maxLines="3"
                             android:paddingLeft="4dp"
                             android:paddingRight="4dp"
-                            android:text="nothing is set yet!"
+                            android:text="@string/nothing_is_set_yet"
                             android:textColor="@color/colorPrimaryDark" />
 
                     </TableRow>
@@ -122,7 +122,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginRight="4dp"
                             android:gravity="right"
-                            android:text="Delivery Address"
+                            android:text="@string/delivery_address_label"
                             android:textColor="@color/colorAccent" />
 
                         <TextView
@@ -135,7 +135,7 @@
                             android:maxLines="3"
                             android:paddingLeft="4dp"
                             android:paddingRight="4dp"
-                            android:text="nothing is set yet!"
+                            android:text="@string/nothing_is_set_yet"
                             android:textColor="@color/colorPrimaryDark" />
                     </TableRow>
 
@@ -149,7 +149,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginRight="4dp"
                             android:gravity="right"
-                            android:text="Billing Address"
+                            android:text="@string/billing_address_label"
                             android:textColor="@color/colorAccent" />
 
                         <TextView
@@ -162,7 +162,7 @@
                             android:maxLines="3"
                             android:paddingLeft="4dp"
                             android:paddingRight="4dp"
-                            android:text="nothing is set yet!"
+                            android:text="@string/nothing_is_set_yet"
                             android:textColor="@color/colorPrimaryDark" />
                     </TableRow>
 
@@ -175,7 +175,7 @@
                             android:layout_height="match_parent"
                             android:layout_marginRight="4dp"
                             android:gravity="right"
-                            android:text="Fee"
+                            android:text="@string/column_fee"
                             android:textColor="@color/colorAccent" />
 
                         <TextView
@@ -198,7 +198,7 @@
                             android:layout_height="match_parent"
                             android:layout_marginRight="4dp"
                             android:gravity="right"
-                            android:text="Discount"
+                            android:text="@string/column_discount"
                             android:textColor="@color/colorAccent" />
 
                         <TextView
@@ -252,7 +252,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:gravity="start|center_vertical"
-                        android:text="Details"
+                        android:text="@string/details"
                         android:textColor="@color/colorPrimary"
                         android:textSize="16sp" />
 
@@ -371,7 +371,7 @@
                         android:layout_height="wrap_content"
                         android:layout_gravity="center_vertical"
                         android:layout_weight="1"
-                        android:text="Current status:"
+                        android:text="@string/current_status"
                         android:textColor="@color/colorPrimary" />
 
                     <TextView
@@ -385,9 +385,21 @@
                         android:background="@color/colorPrimaryDark"
                         android:gravity="center"
                         android:singleLine="true"
-                        android:text="PLACED"
+                        android:text="@string/status_pending"
                         android:textColor="@color/colorPrimary"
                         android:textSize="16sp" />
+
+                    <ImageView
+                        android:id="@+id/imgCancelOrder"
+                        android:layout_width="30dp"
+                        android:layout_height="30dp"
+                        android:layout_margin="4dp"
+                        android:background="@drawable/border3"
+                        android:contentDescription="@string/cancel_order"
+                        android:padding="6dp"
+                        android:scaleType="fitXY"
+                        android:src="@drawable/ic_cancel"
+                        android:visibility="gone" />
 
                 </LinearLayout>
 
@@ -409,7 +421,7 @@
                             android:background="@drawable/border"
                             android:gravity="center"
                             android:padding="4dp"
-                            android:text="Status"
+                            android:text="@string/status"
                             android:textColor="@color/colorPrimaryDark" />
 
                         <TextView
@@ -419,7 +431,7 @@
                             android:background="@drawable/border"
                             android:gravity="center"
                             android:padding="4dp"
-                            android:text="Date"
+                            android:text="@string/date"
                             android:textColor="@color/colorPrimaryDark" />
                     </TableRow>
 

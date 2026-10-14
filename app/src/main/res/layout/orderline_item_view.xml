@@ -59,7 +59,10 @@
             android:id="@+id/imgAdd2Cart"
             android:layout_width="30dp"
             android:layout_height="30dp"
+            android:layout_margin="4dp"
+            android:background="@drawable/border3"
             android:contentDescription="@string/add_item"
+            android:padding="6dp"
             android:scaleType="fitXY"
             android:src="@drawable/ic_add_shopping_cart" />
     </LinearLayout>

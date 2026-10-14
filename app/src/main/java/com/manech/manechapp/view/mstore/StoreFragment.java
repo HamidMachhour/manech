@@ -23,6 +23,7 @@ import com.manech.manechapp.MainActivity;
 import com.manech.manechapp.R;
 import com.manech.manechapp.data.Address;
 import com.manech.manechapp.data.ManechStore;
+import com.manech.manechapp.helper.HtmlDescription;
 import com.manech.manechapp.model.UserViewModel;
 import com.manech.manechapp.view.EditHtmlDialog;
 import com.manech.manechapp.view.address.AddressChooserFragment;
@@ -152,7 +153,7 @@ public class StoreFragment extends Fragment {
             @Override
             public void onOkClick(String editedHtml) {
                 htmlDescription = editedHtml;
-                webViewDescription.loadDataWithBaseURL(null, editedHtml, "text/html", "UTF-8", null);
+                HtmlDescription.render(webViewDescription, editedHtml);
             }
         });
         dialog.show(getActivity().getSupportFragmentManager(), "edit_html_dialog");
@@ -292,15 +293,15 @@ public class StoreFragment extends Fragment {
         if (store != null) {
             String state = "";
             if (store.getPublishDate() != null) {
-                state = "Published";
+                state = getString(R.string.published_state);
             }
             if (store.getId().equals(userViewModel.getCurrentUser().getStoreId())) {
-                state += " (Default store)";
+                state += " (" + getString(R.string.default_store_label) + ")";
             }
             tvState.setText(state);
             txtName.setText(store.getName());
             htmlDescription = store.getDescription();
-            webViewDescription.loadDataWithBaseURL(null, htmlDescription, "text/html", "UTF-8", null);
+            HtmlDescription.render(webViewDescription, htmlDescription);
         }
     }
 

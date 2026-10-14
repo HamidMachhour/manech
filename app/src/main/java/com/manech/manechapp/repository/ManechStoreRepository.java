@@ -6,6 +6,7 @@ import com.manech.manechapp.dao.ResourceDAO;
 import com.manech.manechapp.data.Address;
 import com.manech.manechapp.data.ManechStore;
 import com.manech.manechapp.data.images.StoreImage;
+import com.manech.manechapp.helper.MyUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -70,6 +71,39 @@ public class ManechStoreRepository {
 
     public List<ManechStore> fetchUserStores(UUID userId) {
         return this.manechStoreDAO.fetchStores(userId);
+    }
+
+    public List<ManechStore> fetchPublicStores() {
+        return manechStoreDAO.publicStores();
+    }
+
+    public ManechStore copyPublicStore(ManechStore source, UUID ownerId) {
+        if (source == null || ownerId == null || source.getPublishDate() == null || source.getTrashDate() != null) {
+            return null;
+        }
+        ManechStore copy = source.clone();
+        copy.setUserId(ownerId);
+        copy.setAddressId(null);
+        copy.setAddress(null);
+        copy.setPublishDate(null);
+        copy.setTrashDate(null);
+        copy.setImageId(null);
+        copy.setDefaultImage(null);
+        copy.setQrCode(MyUtils.generateQRCodeValue(copy.getId()));
+        List<StoreImage> copiedImages = new ArrayList<>();
+        StoreImage copiedDefaultImage = null;
+        for (StoreImage image : fetchImages(source.getId())) {
+            StoreImage imageCopy = new StoreImage(image.getUri(), copy.getId());
+            if (image.getId().equals(source.getImageId())) {
+                copy.setImageId(imageCopy.getId());
+                copiedDefaultImage = imageCopy;
+            }
+            copiedImages.add(imageCopy);
+        }
+        copy.setImages(copiedImages);
+        copy.setDefaultImage(copiedDefaultImage);
+        insertWithResources(copy);
+        return copy;
     }
 
     public void moveToTrash(UUID storeId) {

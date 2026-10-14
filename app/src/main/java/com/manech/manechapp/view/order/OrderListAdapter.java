@@ -42,8 +42,11 @@ public class OrderListAdapter extends RecyclerView.Adapter<OrderViewHolder> impl
         Order order = orderList.get(position);
         holder.getTvOrderId().setText(order.getQrCode()+"");
         holder.getTvOrderDate().setText(Converters.fromDate(order.getCreateAt()));
-        holder.getTvTotalPrice().setText(order.getPrice()+"");
-        holder.getTvOrderStatus().setText(order.getOrderStatusList().get(0).getStatus().name());
+        holder.getTvTotalPrice().setText(order.getPrice() + " DH");
+        holder.getTvOrderStatus().setText(order.getOrderStatusList() == null || order.getOrderStatusList().isEmpty()
+                ? holder.itemView.getContext().getString(R.string.status_unknown)
+                : order.getOrderStatusList().get(0).getStatus()
+                .getLocalizedName(holder.itemView.getContext()));
     }
 
 

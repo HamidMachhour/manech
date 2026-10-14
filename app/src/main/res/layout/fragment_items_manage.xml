@@ -9,6 +9,7 @@
     android:scrollbarAlwaysDrawVerticalTrack="false">
 
     <androidx.cardview.widget.CardView
+        android:id="@+id/filter_card"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:outlineSpotShadowColor="@color/colorPrimaryDark"
@@ -47,11 +48,111 @@
 
             </LinearLayout>
 
+            <LinearLayout
+                android:id="@+id/manage_filter_content"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="4dp"
+                android:visibility="visible">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <EditText
+                        android:id="@+id/edit_item_search"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:hint="@string/search_items"
+                        android:imeOptions="actionSearch"
+                        android:inputType="text"
+                        android:maxLines="1"
+                        android:singleLine="true" />
+
+                    <ImageView
+                        android:id="@+id/button_scan_code"
+                        android:layout_width="30dp"
+                        android:layout_height="30dp"
+                        android:layout_margin="4dp"
+                        android:background="@drawable/border3"
+                        android:contentDescription="@string/scan_barcode"
+                        android:padding="6dp"
+                        android:scaleType="fitXY"
+                        android:src="@drawable/ic_scan_barcode" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <EditText
+                        android:id="@+id/edit_min_price"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:hint="@string/min_price"
+                        android:inputType="numberDecimal"
+                        android:maxLines="1" />
+
+                    <EditText
+                        android:id="@+id/edit_max_price"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:hint="@string/max_price"
+                        android:inputType="numberDecimal"
+                        android:maxLines="1" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <CheckBox
+                        android:id="@+id/check_in_stock"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/in_stock_only" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <Spinner
+                        android:id="@+id/spinner_sort"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1" />
+
+                    <ImageView
+                        android:id="@+id/button_reset_filters"
+                        android:layout_width="30dp"
+                        android:layout_height="30dp"
+                        android:layout_margin="4dp"
+                        android:background="@drawable/border3"
+                        android:contentDescription="@string/reset_filters"
+                        android:padding="6dp"
+                        android:scaleType="fitXY"
+                        android:src="@drawable/ic_refresh" />
+                </LinearLayout>
+            </LinearLayout>
+
             <RadioGroup
                 android:id="@+id/filter_radio_group"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:checkedButton="@id/radioAll"
+                android:checkedButton="@id/radionActive"
                 android:gravity="end"
                 android:orientation="horizontal">
 
@@ -77,6 +178,14 @@
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="4dp"
                     android:text="@string/in_trash"
+                    android:textColor="@color/colorAccent" />
+
+                <RadioButton
+                    android:id="@+id/radioOrphan"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="4dp"
+                    android:text="@string/orphan_item"
                     android:textColor="@color/colorAccent" />
 
                 <RadioButton

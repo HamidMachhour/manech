@@ -158,6 +158,17 @@
                     android:src="@drawable/ic_delete" />
 
                 <ImageView
+                    android:id="@+id/imgJoin"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:layout_marginEnd="4dp"
+                    android:contentDescription="Join store"
+                    android:padding="6dp"
+                    android:scaleType="fitXY"
+                    android:src="@drawable/ic_join"
+                    android:visibility="gone" />
+
+                <ImageView
                     android:id="@+id/imgPublish"
                     android:layout_width="30dp"
                     android:layout_height="30dp"
