@@ -14,7 +14,7 @@
         <!-- Define the Google Maps API key -->
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyDOOOQzDLwwLSTsbTBYrXOK8yCgpzopRlo" />
+            android:value="" />
         <meta-data
             android:name="com.google.mlkit.vision.DEPENDENCIES"
             android:value="barcode_ui" />
